@@ -282,22 +282,22 @@ export function RecoveryCasesList() {
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[960px]">
                 <thead className="bg-[#181714] text-[#817A70] border-b border-[rgba(242,237,227,0.08)] font-mono text-[11px] uppercase tracking-wider">
                   <tr>
-                    <th className="py-2.5 px-4 font-medium">Case ID</th>
-                    <th className="py-2.5 px-4 font-medium">Customer</th>
+                    <th className="py-2.5 px-3 font-medium whitespace-nowrap">Case ID</th>
+                    <th className="py-2.5 px-3 font-medium whitespace-nowrap">Customer</th>
                     <th
-                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
+                      className="py-2.5 px-3 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors whitespace-nowrap"
                       onClick={() => toggleSort('amount_at_risk')}
                     >
                       <div className="flex items-center gap-1">
                         Amount at Risk <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="py-2.5 px-4 font-medium">Failure Category</th>
+                    <th className="py-2.5 px-3 font-medium whitespace-nowrap">Failure Category</th>
                     <th
-                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
+                      className="py-2.5 px-3 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors whitespace-nowrap"
                       onClick={() => toggleSort('risk_score')}
                     >
                       <div className="flex items-center gap-1">
@@ -305,24 +305,24 @@ export function RecoveryCasesList() {
                       </div>
                     </th>
                     <th
-                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
+                      className="py-2.5 px-3 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors whitespace-nowrap"
                       onClick={() => toggleSort('recovery_probability')}
                     >
                       <div className="flex items-center gap-1">
                         Recovery Prob. <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="py-2.5 px-4 font-medium">Status</th>
-                    <th className="py-2.5 px-4 font-medium">Recommended Action</th>
+                    <th className="py-2.5 px-3 font-medium whitespace-nowrap">Status</th>
+                    <th className="py-2.5 px-3 font-medium whitespace-nowrap">Recommended Action</th>
                     <th
-                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
+                      className="py-2.5 px-3 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors whitespace-nowrap"
                       onClick={() => toggleSort('detected_at')}
                     >
                       <div className="flex items-center gap-1">
                         Detected <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="py-2.5 px-4 font-medium text-right">Details</th>
+                    <th className="py-2.5 px-3 font-medium text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(242,237,227,0.06)]">
@@ -339,7 +339,7 @@ export function RecoveryCasesList() {
                         className="hover:bg-[#24221E]/60 transition-colors duration-150 group"
                       >
                         {/* Case ID */}
-                        <td className="py-3 px-4 font-mono font-medium">
+                        <td className="py-2.5 px-3 font-mono font-medium whitespace-nowrap">
                           <Link
                             href={`/recovery-cases/${c.case_id}`}
                             className="text-[#D1B982] hover:text-[#F2EDE3] hover:underline flex items-center gap-1 transition-colors"
@@ -350,34 +350,34 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Customer */}
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-[#F2EDE3]">
+                        <td className="py-2.5 px-3">
+                          <div className="font-medium text-[#F2EDE3] whitespace-nowrap">
                             {c.customer_name || 'Guest / Merchant Order'}
                           </div>
-                          <div className="text-[10px] text-[#817A70] font-mono">
+                          <div className="text-[10px] text-[#817A70] font-mono whitespace-nowrap">
                             {c.customer_email || c.customer_id?.slice(0, 14) || '—'}
                           </div>
                         </td>
 
                         {/* Amount */}
-                        <td className="py-3 px-4 font-mono font-semibold text-[#F2EDE3]">
+                        <td className="py-2.5 px-3 font-mono font-semibold text-[#F2EDE3] whitespace-nowrap">
                           {formatINR(amountNum)}
                         </td>
 
                         {/* Failure Category */}
-                        <td className="py-3 px-4">
-                          <span className="font-mono text-[11px] text-[#B7B0A3]">
+                        <td className="py-2.5 px-3">
+                          <span className="font-mono text-[11px] text-[#B7B0A3] whitespace-nowrap">
                             {c.failure_category}
                           </span>
                         </td>
 
                         {/* Risk Score */}
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs text-[#F2EDE3] font-medium">
+                        <td className="py-2.5 px-3">
+                          <div className="flex items-center gap-1.5 whitespace-nowrap">
+                            <span className="font-mono text-xs text-[#F2EDE3] font-medium w-5">
                               {riskNum}
                             </span>
-                            <div className="w-12 bg-[#24221E] h-1.5 rounded-full overflow-hidden">
+                            <div className="w-10 bg-[#24221E] h-1.5 rounded-full overflow-hidden">
                               <div
                                 className={`h-full ${
                                   riskNum > 70
@@ -393,12 +393,12 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Recovery Probability */}
-                        <td className="py-3 px-4 font-mono font-semibold text-[#6F9B7A]">
+                        <td className="py-2.5 px-3 font-mono font-semibold text-[#6F9B7A] whitespace-nowrap">
                           {(probNum * 100).toFixed(0)}%
                         </td>
 
                         {/* Status */}
-                        <td className="py-3 px-4">
+                        <td className="py-2.5 px-3 whitespace-nowrap">
                           <span
                             className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${badge.className}`}
                           >
@@ -407,7 +407,7 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Recommended Action */}
-                        <td className="py-3 px-4">
+                        <td className="py-2.5 px-3 whitespace-nowrap">
                           <Badge variant={recommended.variant} className="text-[10px] py-0.5 font-mono">
                             <Bot className="w-2.5 h-2.5 mr-1" />
                             {recommended.label}
@@ -415,12 +415,12 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Detected Time */}
-                        <td className="py-3 px-4 text-[#817A70] font-mono text-[11px]">
+                        <td className="py-2.5 px-3 text-[#817A70] font-mono text-[11px] whitespace-nowrap">
                           {formatDate(c.detected_at)}
                         </td>
 
                         {/* Action Buttons */}
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-2.5 px-3 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
                               variant="ghost"
