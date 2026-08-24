@@ -10,6 +10,7 @@ import { actionsApiRouter } from './actions';
 import { metricsApiRouter } from './metrics';
 import { webhooksApiRouter } from './webhooks';
 import { evaluationApiRouter } from './evaluation';
+import { simulationRouter } from '../../simulation/simulation.router';
 
 export const apiRouter = Router();
 
@@ -20,3 +21,4 @@ apiRouter.use('/recovery-actions', actionsApiRouter);
 apiRouter.use('/metrics', metricsApiRouter);
 apiRouter.use('/webhooks', webhooksApiRouter);
 apiRouter.use('/evaluation', evaluationApiRouter);
+apiRouter.use('/simulation', simulationRouter);
