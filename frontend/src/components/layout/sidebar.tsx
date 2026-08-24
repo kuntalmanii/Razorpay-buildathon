@@ -10,9 +10,9 @@ import {
   ScrollText,
   Award,
   Zap,
-  CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SystemStatusDrawer } from './system-status-drawer';
 
 interface NavItem {
   label: string;
@@ -100,22 +100,8 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* System Status Footer */}
-      <div className="p-4 m-3 rounded-xl bg-[#13161C] border border-[#232733]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-medium text-stone-300">Test Mode Active</span>
-          </div>
-          <span className="text-[10px] font-mono text-stone-400">rzp_test</span>
-        </div>
-        <div className="mt-2 pt-2 border-t border-[#1E232E] flex items-center justify-between text-[11px] text-stone-400">
-          <span>Policy Safety Engine</span>
-          <span className="text-emerald-400 flex items-center gap-1 font-medium">
-            <CheckCircle2 className="w-3 h-3" /> Enforced
-          </span>
-        </div>
-      </div>
+      {/* Real-time Subsystem Telemetry */}
+      <SystemStatusDrawer />
     </aside>
   );
 }

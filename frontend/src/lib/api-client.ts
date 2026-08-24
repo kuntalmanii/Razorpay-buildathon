@@ -15,6 +15,8 @@ import {
   WebhookEventItem,
   PaginationMeta,
   EvaluationReport,
+  SystemHealthTelemetry,
+  ScenarioRunResult,
 } from '../types/api';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -99,12 +101,15 @@ export const apiClient = {
     limit?: number;
     status?: string;
     failureCategory?: string;
+    failure_category?: string;
   }): Promise<{ cases: RecoveryCase[]; meta: PaginationMeta }> {
     const q = new URLSearchParams();
     if (params?.page) q.set('page', params.page.toString());
     if (params?.limit) q.set('limit', params.limit.toString());
-    if (params?.status) q.set('status', params.status);
-    if (params?.failureCategory) q.set('failureCategory', params.failureCategory);
+    if (params?.status && params.status !== 'all') q.set('status', params.status);
+
+    const cat = params?.failureCategory || params?.failure_category;
+    if (cat && cat !== 'all') q.set('failure_category', cat);
 
     const queryStr = q.toString() ? `?${q.toString()}` : '';
     const res = await fetchPaginated<RecoveryCase>(`/api/recovery-cases${queryStr}`);
@@ -114,39 +119,85 @@ export const apiClient = {
   /**
    * Fetch a single recovery case by ID
    */
-  async getRecoveryCase(caseId: string): Promise<RecoveryCase> {
-    return fetchJson<RecoveryCase>(`/api/recovery-cases/${encodeURIComponent(caseId)}`);
+  async getRecoveryCaseById(id: string): Promise<RecoveryCase> {
+    return fetchJson<RecoveryCase>(`/api/recovery-cases/${id}`);
   },
 
   /**
-   * Fetch audit trail logs for a specific case
+   * Alias for getRecoveryCaseById
    */
-  async getCaseAudit(caseId: string): Promise<AuditLog[]> {
-    return fetchJson<AuditLog[]>(`/api/recovery-cases/${encodeURIComponent(caseId)}/audit`);
+  async getRecoveryCase(id: string): Promise<RecoveryCase> {
+    return fetchJson<RecoveryCase>(`/api/recovery-cases/${id}`);
   },
 
   /**
-   * Fetch recovery actions
+   * Fetch recovery actions (accepts either caseId string or params object)
    */
-  async getRecoveryActions(params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-  }): Promise<{ actions: RecoveryAction[]; meta: PaginationMeta }> {
+  async getRecoveryActions(
+    arg?:
+      | string
+      | {
+          page?: number;
+          limit?: number;
+          caseId?: string;
+          case_id?: string;
+          status?: string;
+          execution_status?: string;
+        }
+  ): Promise<{ actions: RecoveryAction[]; meta: PaginationMeta } & RecoveryAction[]> {
+    if (typeof arg === 'string') {
+      const actions = await fetchJson<RecoveryAction[]>(`/api/recovery-cases/${arg}/actions`);
+      const meta = { page: 1, limit: actions.length, total: actions.length, totalPages: 1 };
+      const res = Object.assign(actions, { actions, meta });
+      return res;
+    }
+
     const q = new URLSearchParams();
-    if (params?.page) q.set('page', params.page.toString());
-    if (params?.limit) q.set('limit', params.limit.toString());
-    if (params?.status) q.set('status', params.status);
+    if (arg?.page) q.set('page', arg.page.toString());
+    if (arg?.limit) q.set('limit', arg.limit.toString());
+    const caseId = arg?.caseId || arg?.case_id;
+    if (caseId) q.set('case_id', caseId);
+    const status = arg?.status || arg?.execution_status;
+    if (status && status !== 'all') q.set('execution_status', status);
 
     const queryStr = q.toString() ? `?${q.toString()}` : '';
     const res = await fetchPaginated<RecoveryAction>(`/api/recovery-actions${queryStr}`);
-    return { actions: res.items, meta: res.meta };
+    const arrayResult = Object.assign(res.items, { actions: res.items, meta: res.meta });
+    return arrayResult;
   },
 
   /**
-   * Fetch historical revenue recovery analytics
+   * Fetch case-specific audit logs
    */
-  async getMetrics(days = 14): Promise<MetricsSummary> {
+  async getCaseAudit(caseId: string): Promise<AuditLog[] & { logs: AuditLog[]; meta: PaginationMeta }> {
+    const res = await fetchPaginated<AuditLog>(`/api/dashboard/audit?entity_id=${caseId}`);
+    return Object.assign(res.items, { logs: res.items, meta: res.meta });
+  },
+
+  /**
+   * Fetch audit trail logs with optional filtering
+   */
+  async getAuditLogs(params?: {
+    page?: number;
+    limit?: number;
+    entity_type?: string;
+    entity_id?: string;
+  }): Promise<AuditLog[] & { logs: AuditLog[]; meta: PaginationMeta }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', params.page.toString());
+    if (params?.limit) q.set('limit', params.limit.toString());
+    if (params?.entity_type) q.set('entity_type', params.entity_type);
+    if (params?.entity_id) q.set('entity_id', params.entity_id);
+
+    const queryStr = q.toString() ? `?${q.toString()}` : '';
+    const res = await fetchPaginated<AuditLog>(`/api/dashboard/audit${queryStr}`);
+    return Object.assign(res.items, { logs: res.items, meta: res.meta });
+  },
+
+  /**
+   * Fetch time-windowed metrics for charts
+   */
+  async getMetrics(days = 30): Promise<MetricsSummary> {
     return fetchJson<MetricsSummary>(`/api/metrics?days=${days}`);
   },
 
@@ -184,6 +235,13 @@ export const apiClient = {
   },
 
   /**
+   * Detailed system subsystem health telemetry
+   */
+  async getSystemHealth(): Promise<SystemHealthTelemetry> {
+    return fetchJson<SystemHealthTelemetry>('/api/health');
+  },
+
+  /**
    * Fetch the latest benchmark evaluation report
    */
   async getEvaluation(): Promise<EvaluationReport | null> {
@@ -196,6 +254,16 @@ export const apiClient = {
   async runEvaluation(): Promise<EvaluationReport> {
     return fetchJson<EvaluationReport>('/api/evaluation/run', {
       method: 'POST',
+    });
+  },
+
+  /**
+   * Run a live failure simulation scenario for judges
+   */
+  async runSimulationScenario(scenario: string, caseId?: string): Promise<ScenarioRunResult> {
+    return fetchJson<ScenarioRunResult>('/api/simulation/run-scenario', {
+      method: 'POST',
+      body: JSON.stringify({ scenario, caseId }),
     });
   },
 };

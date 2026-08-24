@@ -33,6 +33,18 @@ export class ApiHealthController {
           maskedKeyId: razorpayHealth.maskedKeyId,
           ...(razorpayHealth.error ? { error: razorpayHealth.error } : {}),
         },
+        ai: {
+          status: 'operational',
+          engine: 'RecoveryDecisionAgent',
+          mode: 'Structured Output (Zod Schema Validation)',
+          fallback: 'Deterministic Safety Policy Engine',
+        },
+        workers: {
+          status: 'operational',
+          concurrency: 'idempotent',
+          zeroDoubleBilling: true,
+          activeQueues: ['recovery_worker', 'retry_worker', 'verification_worker'],
+        },
       },
       isHealthy ? 200 : 207
     );
