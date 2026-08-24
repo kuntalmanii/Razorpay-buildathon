@@ -10,6 +10,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AddCaseModal } from './add-case-modal';
+import { EditCaseDrawer } from './edit-case-drawer';
 import {
   ShieldAlert,
   ChevronLeft,
@@ -19,6 +21,8 @@ import {
   User,
   CreditCard,
   CheckCircle2,
+  Plus,
+  Pencil,
 } from 'lucide-react';
 
 export function RecoveryCasesView() {
@@ -36,6 +40,10 @@ export function RecoveryCasesView() {
   const [selectedCase, setSelectedCase] = useState<RecoveryCase | null>(null);
   const [caseAudit, setCaseAudit] = useState<AuditLog[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
+
+  // Add / Edit modals
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCase, setEditingCase] = useState<RecoveryCase | null>(null);
 
   const fetchCases = useCallback(async () => {
     setLoading(true);
@@ -122,6 +130,16 @@ export function RecoveryCasesView() {
             <option value="subscription_halted">Subscription Halted</option>
             <option value="customer_abandoned">Customer Abandoned</option>
           </select>
+          {/* Add Case Button */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setShowAddModal(true)}
+            className="text-xs font-semibold flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Case
+          </Button>
         </div>
       </div>
 
@@ -243,9 +261,23 @@ export function RecoveryCasesView() {
                           {formatDate(c.detected_at)}
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <Button variant="outline" size="sm" className="text-xs py-1 px-2.5 h-7">
-                            Inspect
-                          </Button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCase(c);
+                              }}
+                              className="text-xs py-1 px-2 h-7 text-[#817A70] hover:text-[#B89A62]"
+                              title="Edit case"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-xs py-1 px-2.5 h-7">
+                              Inspect
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -381,6 +413,31 @@ export function RecoveryCasesView() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Case Modal */}
+      {showAddModal && (
+        <AddCaseModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={(newCase) => {
+            setShowAddModal(false);
+            setCases((prev) => [newCase, ...prev]);
+            setMeta((prev) => ({ ...prev, total: prev.total + 1 }));
+          }}
+        />
+      )}
+
+      {/* Edit Case Drawer */}
+      {editingCase && (
+        <EditCaseDrawer
+          caseData={editingCase}
+          onClose={() => setEditingCase(null)}
+          onUpdated={(updated) => {
+            setCases((prev) => prev.map((c) => (c.case_id === updated.case_id ? updated : c)));
+            if (selectedCase?.case_id === updated.case_id) setSelectedCase(updated);
+            setEditingCase(null);
+          }}
+        />
       )}
     </div>
   );

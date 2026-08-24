@@ -27,7 +27,9 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Pencil,
 } from 'lucide-react';
+import { EditCaseDrawer } from './edit-case-drawer';
 
 interface CaseDetailProps {
   caseId: string;
@@ -41,6 +43,7 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
 
   const fetchCaseDetails = useCallback(async () => {
     setLoading(true);
@@ -149,6 +152,15 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
 
         <div className="flex items-center gap-2">
           <Badge variant="gold">Test Mode Telemetry</Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditDrawerOpen(true)}
+            className="h-8 px-2.5 text-xs text-[#B89A62] border-[#B89A62]/30 hover:border-[#B89A62]/60"
+          >
+            <Pencil className="w-3.5 h-3.5 mr-1.5" />
+            Edit Case
+          </Button>
         </div>
       </div>
 
@@ -584,6 +596,18 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Case Drawer */}
+      {editDrawerOpen && caseData && (
+        <EditCaseDrawer
+          caseData={caseData}
+          onClose={() => setEditDrawerOpen(false)}
+          onUpdated={(updated) => {
+            setCaseData(updated);
+            setEditDrawerOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

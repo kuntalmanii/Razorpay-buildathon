@@ -678,6 +678,78 @@ class DevMemoryStore {
       return { rows, rowCount: rows.length };
     }
 
+    // WRITE PATHS
+
+    // W1. INSERT INTO revenue_risk_cases
+    if (trimmed.startsWith('INSERT INTO revenue_risk_cases')) {
+      const newCase: DevCase = {
+        case_id: params[0] as string,
+        merchant_id: params[1] as string,
+        customer_id: (params[2] as string) || 'cust_manual',
+        payment_id: (params[3] as string) || null,
+        subscription_id: (params[4] as string) || null,
+        amount_at_risk: String(params[5] || '0'),
+        currency: (params[6] as string) || 'INR',
+        failure_category: (params[7] as string) || 'unknown',
+        risk_score: String(params[8] || '50'),
+        recovery_probability: String(params[9] || '0.5'),
+        status: (params[10] as string) || 'open',
+        detected_at: (params[11] as string) || new Date().toISOString(),
+        resolved_at: null,
+        recovered_amount: null,
+        recovery_reason: (params[12] as string) || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        merchant_name: 'Acme Enterprise India',
+        customer_name: (params[13] as string) || undefined,
+        customer_email: (params[14] as string) || undefined,
+      };
+      this.cases.push(newCase);
+      return { rows: [newCase], rowCount: 1 };
+    }
+
+    // W2. UPDATE revenue_risk_cases SET ... WHERE case_id = $N
+    if (trimmed.startsWith('UPDATE revenue_risk_cases')) {
+      const caseId = params[params.length - 1] as string;
+      const idx = this.cases.findIndex((c) => c.case_id === caseId);
+      if (idx === -1) return { rows: [], rowCount: 0 };
+
+      const before = { ...this.cases[idx] };
+      // Apply param updates in order: status, risk_score, recovery_probability,
+      // recovery_reason, recovered_amount, resolved_at, customer_name, customer_email
+      let pi = 0;
+      if (trimmed.includes('status =')) this.cases[idx].status = (params[pi++] as string) || this.cases[idx].status;
+      if (trimmed.includes('risk_score =')) this.cases[idx].risk_score = String(params[pi++] || this.cases[idx].risk_score);
+      if (trimmed.includes('recovery_probability =')) this.cases[idx].recovery_probability = String(params[pi++] || this.cases[idx].recovery_probability);
+      if (trimmed.includes('recovery_reason =')) this.cases[idx].recovery_reason = (params[pi++] as string | null) ?? this.cases[idx].recovery_reason;
+      if (trimmed.includes('recovered_amount =')) this.cases[idx].recovered_amount = (params[pi++] as string | null) ?? this.cases[idx].recovered_amount;
+      if (trimmed.includes('resolved_at =')) this.cases[idx].resolved_at = (params[pi++] as string | null) ?? this.cases[idx].resolved_at;
+      if (trimmed.includes('customer_name =')) this.cases[idx].customer_name = (params[pi++] as string | undefined) ?? this.cases[idx].customer_name;
+      if (trimmed.includes('customer_email =')) this.cases[idx].customer_email = (params[pi++] as string | undefined) ?? this.cases[idx].customer_email;
+      this.cases[idx].updated_at = new Date().toISOString();
+
+      return { rows: [{ ...this.cases[idx], _before: before }], rowCount: 1 };
+    }
+
+    // W3. INSERT INTO audit_logs
+    if (trimmed.startsWith('INSERT INTO audit_logs')) {
+      const newLog: DevAuditLog = {
+        log_id: (params[0] as string) || `log_${Date.now()}`,
+        entity_type: (params[1] as string) || 'revenue_risk_cases',
+        entity_id: (params[2] as string) || '',
+        action: (params[3] as string) || 'case_updated',
+        actor_type: (params[4] as string) || 'system',
+        actor_id: (params[5] as string | null) || null,
+        before_state: (params[6] as Record<string, unknown> | null) || null,
+        after_state: (params[7] as Record<string, unknown> | null) || null,
+        metadata: (params[8] as Record<string, unknown> | null) || null,
+        ip_address: null,
+        created_at: new Date().toISOString(),
+      };
+      this.auditLogs.unshift(newLog); // prepend so it appears first in recent list
+      return { rows: [newLog], rowCount: 1 };
+    }
+
     // Fallback: return empty rows
     return { rows: [], rowCount: 0 };
   }

@@ -314,4 +314,48 @@ export const apiClient = {
       body: JSON.stringify({ scenario, caseId }),
     });
   },
+
+  /**
+   * Manually create a new revenue risk case
+   */
+  async createCase(payload: {
+    customer_name?: string;
+    customer_email?: string;
+    customer_id?: string;
+    payment_id?: string;
+    subscription_id?: string;
+    amount_at_risk: number;
+    currency?: string;
+    failure_category: string;
+    risk_score: number;
+    recovery_probability?: number;
+    recovery_reason?: string;
+  }): Promise<RecoveryCase> {
+    return fetchJson<RecoveryCase>('/api/recovery-cases', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Update mutable fields of an existing recovery case
+   */
+  async updateCase(
+    id: string,
+    payload: {
+      status?: string;
+      risk_score?: number;
+      recovery_probability?: number;
+      recovery_reason?: string | null;
+      recovered_amount?: number | null;
+      resolved_at?: string | null;
+      customer_name?: string;
+      customer_email?: string;
+    }
+  ): Promise<RecoveryCase> {
+    return fetchJson<RecoveryCase>(`/api/recovery-cases/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
 };

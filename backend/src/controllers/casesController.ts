@@ -69,4 +69,83 @@ export class CasesController {
     const { actions } = await ActionsService.listActions({ case_id: id }, { page: 1, limit: 50, offset: 0 });
     sendSuccess(res, actions);
   }
+
+  /**
+   * POST /api/recovery-cases
+   */
+  public static async createCase(req: Request, res: Response): Promise<void> {
+    const body = req.body as {
+      customer_id?: string;
+      customer_name?: string;
+      customer_email?: string;
+      payment_id?: string;
+      subscription_id?: string;
+      amount_at_risk?: number | string;
+      currency?: string;
+      failure_category?: string;
+      risk_score?: number | string;
+      recovery_probability?: number | string;
+      recovery_reason?: string;
+    };
+
+    const amountAtRisk = Number(body.amount_at_risk);
+    const riskScore = Number(body.risk_score ?? 50);
+
+    if (!body.failure_category) {
+      throw new ValidationError('failure_category is required');
+    }
+    if (!amountAtRisk || amountAtRisk <= 0) {
+      throw new ValidationError('amount_at_risk must be a positive number (in paise)');
+    }
+
+    const newCase = await CasesService.createCase({
+      customer_id: body.customer_id,
+      customer_name: body.customer_name,
+      customer_email: body.customer_email,
+      payment_id: body.payment_id,
+      subscription_id: body.subscription_id,
+      amount_at_risk: amountAtRisk,
+      currency: body.currency || 'INR',
+      failure_category: body.failure_category,
+      risk_score: riskScore,
+      recovery_probability: body.recovery_probability ? Number(body.recovery_probability) : 0.5,
+      recovery_reason: body.recovery_reason,
+    });
+
+    sendSuccess(res, newCase, 201);
+  }
+
+  /**
+   * PATCH /api/recovery-cases/:id
+   */
+  public static async updateCase(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    if (!id || id.trim().length === 0) {
+      throw new ValidationError('Case ID is required');
+    }
+
+    const body = req.body as {
+      status?: string;
+      risk_score?: number | string;
+      recovery_probability?: number | string;
+      recovery_reason?: string | null;
+      recovered_amount?: number | string | null;
+      resolved_at?: string | null;
+      customer_name?: string;
+      customer_email?: string;
+    };
+
+    const payload: Parameters<typeof CasesService.updateCase>[1] = {};
+    if (body.status !== undefined) payload.status = body.status;
+    if (body.risk_score !== undefined) payload.risk_score = Number(body.risk_score);
+    if (body.recovery_probability !== undefined) payload.recovery_probability = Number(body.recovery_probability);
+    if ('recovery_reason' in body) payload.recovery_reason = body.recovery_reason ?? null;
+    if ('recovered_amount' in body) payload.recovered_amount = body.recovered_amount != null ? Number(body.recovered_amount) : null;
+    if ('resolved_at' in body) payload.resolved_at = body.resolved_at ?? null;
+    if (body.customer_name !== undefined) payload.customer_name = body.customer_name;
+    if (body.customer_email !== undefined) payload.customer_email = body.customer_email;
+
+    const updated = await CasesService.updateCase(id, payload);
+    sendSuccess(res, updated);
+  }
 }
