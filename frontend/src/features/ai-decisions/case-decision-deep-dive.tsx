@@ -10,6 +10,7 @@ import { CardSkeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { RecoveryFlowVisualizer } from '../recovery-cases/recovery-flow-visualizer';
 import {
   ArrowLeft,
   Bot,
@@ -123,6 +124,13 @@ export function CaseDecisionDeepDive({ caseId }: CaseDecisionDeepDiveProps) {
           </div>
         </div>
       </div>
+
+      {/* Signature 7-Stage Recovery Lifecycle Flow Visualizer */}
+      <RecoveryFlowVisualizer
+        caseData={caseData}
+        actions={actions}
+        auditLogs={auditLogs}
+      />
 
       {/* 3-Tier Visual Separation Architecture Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { RecoveryFlowVisualizer } from './recovery-flow-visualizer';
 import {
   ArrowLeft,
   Bot,
@@ -219,6 +220,13 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Signature 7-Stage Recovery Lifecycle Flow Visualizer */}
+      <RecoveryFlowVisualizer
+        caseData={caseData}
+        actions={actions}
+        auditLogs={auditLogs}
+      />
 
       {/* Row 1: Failure Diagnosis & Customer Context */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
