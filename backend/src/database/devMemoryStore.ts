@@ -457,7 +457,122 @@ class DevMemoryStore {
       };
     }
 
-    // 4. Cases Count Query
+    // 4. Evaluation Cases Aggregate Query
+    if (trimmed.includes('total_cases') && trimmed.includes('recovered_cases')) {
+      let total = 0;
+      let recovered = 0;
+      let open = 0;
+      let escalated = 0;
+      let totalRisk = 0n;
+      let totalRecovered = 0n;
+      for (const c of this.cases) {
+        total += 1;
+        totalRisk += BigInt(c.amount_at_risk || '0');
+        if (c.status === 'recovered') {
+          recovered += 1;
+          if (c.recovered_amount) {
+            totalRecovered += BigInt(c.recovered_amount);
+          }
+        } else if (c.status === 'open' || c.status === 'in_progress') {
+          open += 1;
+        } else if (c.status === 'escalated') {
+          escalated += 1;
+        }
+      }
+      const avgRecovered = recovered > 0 ? (totalRecovered / BigInt(recovered)).toString() : '250000';
+      return {
+        rows: [{
+          total_cases: total,
+          recovered_cases: recovered,
+          open_cases: open,
+          escalated_cases: escalated,
+          total_risk_paise: totalRisk.toString(),
+          total_recovered_paise: totalRecovered.toString(),
+          avg_recovered_paise: avgRecovered,
+        }],
+        rowCount: 1,
+      };
+    }
+
+    // 5. Evaluation Policy & Idempotency Audit Logs Aggregate
+    if (trimmed.includes('policy_blocks') && trimmed.includes('idempotent_blocks')) {
+      let policyBlocks = 0;
+      let idempotentBlocks = 0;
+      let webhookDuplicates = 0;
+      let timeoutGuards = 0;
+      for (const l of this.auditLogs) {
+        const act = (l.action || '').toLowerCase();
+        if (act.includes('policy_block') || act.includes('action_rejected') || act.includes('policy_blocked')) {
+          policyBlocks += 1;
+        }
+        if (act.includes('idempotency') || act.includes('duplicate_prevented')) {
+          idempotentBlocks += 1;
+        }
+        if (l.entity_type === 'webhook_events' && act.includes('duplicate')) {
+          webhookDuplicates += 1;
+        }
+        if (act.includes('verification') || act.includes('timeout')) {
+          timeoutGuards += 1;
+        }
+      }
+      return {
+        rows: [{
+          policy_blocks: policyBlocks,
+          idempotent_blocks: idempotentBlocks,
+          webhook_duplicates: webhookDuplicates,
+          timeout_guards: timeoutGuards,
+        }],
+        rowCount: 1,
+      };
+    }
+
+    // 6. Evaluation Actions Aggregate
+    if (trimmed.includes('retries_count') && trimmed.includes('total_actions')) {
+      let total = 0;
+      let retries = 0;
+      let failed = 0;
+      for (const a of this.actions) {
+        total += 1;
+        if (a.action_type === 'retry_payment' || a.action_type === 'schedule_retry') {
+          retries += 1;
+        }
+        if (a.execution_status === 'failed') {
+          failed += 1;
+        }
+      }
+      return {
+        rows: [{
+          total_actions: total,
+          retries_count: retries,
+          failed_actions: failed,
+        }],
+        rowCount: 1,
+      };
+    }
+
+    // 7. Group By Failure Category (Category Breakdown Chart)
+    if (trimmed.includes('GROUP BY failure_category')) {
+      const stats: Record<string, { total: number; recovered: number; count: number }> = {};
+      for (const c of this.cases) {
+        if (!stats[c.failure_category]) {
+          stats[c.failure_category] = { total: 0, recovered: 0, count: 0 };
+        }
+        stats[c.failure_category].total += 1;
+        stats[c.failure_category].count += 1;
+        if (c.status === 'recovered') {
+          stats[c.failure_category].recovered += 1;
+        }
+      }
+      const rows = Object.entries(stats).map(([failure_category, s]) => ({
+        failure_category,
+        total: s.total,
+        count: s.count,
+        recovered: s.recovered,
+      }));
+      return { rows, rowCount: rows.length };
+    }
+
+    // 8. Cases Count Query
     if (trimmed.includes('SELECT COUNT(*)::int AS total') && trimmed.includes('FROM revenue_risk_cases')) {
       let filtered = [...this.cases];
       const statusParam = params.find((p) => typeof p === 'string' && ['open', 'in_progress', 'recovered', 'escalated', 'unrecoverable'].includes(p as string));
@@ -467,14 +582,14 @@ class DevMemoryStore {
       return { rows: [{ total: filtered.length }], rowCount: 1 };
     }
 
-    // 5. Single Case By ID
+    // 9. Single Case By ID
     if (trimmed.includes('FROM revenue_risk_cases') && trimmed.includes('c.case_id = $1')) {
       const id = params[0] as string;
       const found = this.cases.find((c) => c.case_id === id);
       return { rows: found ? [found] : [], rowCount: found ? 1 : 0 };
     }
 
-    // 6. Cases List Query
+    // 10. Cases List Query
     if (trimmed.includes('FROM revenue_risk_cases')) {
       let filtered = [...this.cases];
       const statusParam = params.find((p) => typeof p === 'string' && ['open', 'in_progress', 'recovered', 'escalated', 'unrecoverable'].includes(p as string));

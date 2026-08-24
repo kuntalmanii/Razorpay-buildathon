@@ -11,7 +11,10 @@ export class EvaluationController {
    * GET /api/evaluation
    */
   public static async getEvaluation(req: Request, res: Response): Promise<void> {
-    const report = EvaluationService.getLatestReport();
+    let report = EvaluationService.getLatestReport();
+    if (!report) {
+      report = await EvaluationService.runEvaluation();
+    }
     sendSuccess(res, report);
   }
 
