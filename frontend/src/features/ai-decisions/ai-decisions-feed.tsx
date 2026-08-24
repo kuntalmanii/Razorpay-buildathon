@@ -144,7 +144,7 @@ export function AiDecisionsFeed() {
               const aiDecision = (payload?.decision as string) || act.action_type.replace(/_/g, ' ').toUpperCase();
               const confidence = typeof payload?.confidence === 'number' ? payload.confidence : 0.85;
               const customerMessage = payload?.customerMessage as string | undefined;
-              const reasoningSummary = (payload?.reasoningSummary as string) || 'Diagnostic reasoning completed based on payment failure category and customer history.';
+              const reasoningSummary = (payload?.reasoning as string) || (payload?.reasoningSummary as string) || 'Diagnostic reasoning completed based on payment failure category and customer history.';
 
               return (
                 <Card
@@ -175,9 +175,9 @@ export function AiDecisionsFeed() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Link href={`/recovery-cases/${act.case_id}/decision`}>
+                      <Link href={`/recovery-cases/${act.case_id}`}>
                         <Button variant="outline" size="sm" className="text-xs h-7 px-2.5">
-                          Deep Dive
+                          Inspect Case
                         </Button>
                       </Link>
                       <button
@@ -213,35 +213,45 @@ export function AiDecisionsFeed() {
                       {/* Tier 2: Policy Decision */}
                       <div className="p-2.5 rounded-md bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-[10px] font-mono uppercase tracking-wider text-[#6F9B7A] flex items-center gap-1">
+                          <span className={`font-medium text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${
+                            act.policy_status === 'approved' ? 'text-[#6F9B7A]' : 'text-[#B56F68]'
+                          }`}>
                             <ShieldCheck className="w-3 h-3" /> 2. Policy Gate
                           </span>
                           <span className="text-[10px] text-[#817A70] font-mono">Enforced</span>
                         </div>
-                        <div className="font-mono font-medium text-[#6F9B7A] text-xs uppercase">
-                          {act.policy_status}
+                        <div className={`font-mono font-semibold text-xs uppercase ${
+                          act.policy_status === 'approved' ? 'text-[#6F9B7A]' : 'text-[#B56F68]'
+                        }`}>
+                          {act.policy_status === 'approved' ? 'Approved' : 'Blocked by Policy'}
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-[#817A70] font-mono">
                           <span>Rule Gates:</span>
-                          <span className="text-[#6F9B7A]">All Passed</span>
+                          <span className={act.policy_status === 'approved' ? 'text-[#6F9B7A]' : 'text-[#B56F68]'}>
+                            {act.policy_status === 'approved' ? 'All Passed' : 'Violation Intercepted'}
+                          </span>
                         </div>
                       </div>
 
                       {/* Tier 3: Execution Result */}
                       <div className="p-2.5 rounded-md bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-[10px] font-mono uppercase tracking-wider text-[#71879A] flex items-center gap-1">
+                          <span className={`font-medium text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${
+                            act.execution_status === 'completed' ? 'text-[#6F9B7A]' : act.execution_status === 'failed' ? 'text-[#B56F68]' : 'text-[#71879A]'
+                          }`}>
                             <Activity className="w-3 h-3" /> 3. Execution
                           </span>
                           <span className="text-[10px] text-[#817A70] font-mono">Worker</span>
                         </div>
-                        <div className="font-mono font-medium text-[#71879A] text-xs uppercase">
+                        <div className={`font-mono font-semibold text-xs uppercase ${
+                          act.execution_status === 'completed' ? 'text-[#6F9B7A]' : act.execution_status === 'failed' ? 'text-[#B56F68]' : 'text-[#71879A]'
+                        }`}>
                           {act.execution_status}
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-[#817A70] font-mono truncate">
                           <span>Key:</span>
                           <span className="text-[#B7B0A3] truncate max-w-[100px]">
-                            {act.idempotency_key?.slice(0, 16) || '—'}...
+                            {act.idempotency_key?.slice(0, 16) || act.action_id.slice(0, 16)}...
                           </span>
                         </div>
                       </div>
