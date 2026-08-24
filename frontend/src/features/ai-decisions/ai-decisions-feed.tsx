@@ -265,7 +265,7 @@ export function AiDecisionsFeed() {
                               <MessageSquare className="w-3.5 h-3.5 text-amber-400" /> Customer-Facing Message Copy:
                             </span>
                             <p className="text-xs text-stone-300 bg-[#161922] p-3 rounded-lg border border-[#232733] italic">
-                              "{customerMessage}"
+                              &ldquo;{customerMessage}&rdquo;
                             </p>
                           </div>
                         )}
