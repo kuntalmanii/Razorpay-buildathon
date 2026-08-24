@@ -32,6 +32,7 @@ import {
   ResponsiveContainer,
   Cell,
   CartesianGrid,
+  Legend,
 } from 'recharts';
 
 export function EvaluationDashboard() {
@@ -382,43 +383,96 @@ export function EvaluationDashboard() {
           {/* 4. CATEGORY BREAKDOWN VISUALIZATION */}
           {report.categoryBreakdown && report.categoryBreakdown.length > 0 && (
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Category-Level Recovery Distribution</CardTitle>
-                <CardDescription>Empirical benchmark breakdown across failure categories</CardDescription>
+              <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <CardTitle>Category-Level Recovery Distribution</CardTitle>
+                  <CardDescription>Empirical benchmark breakdown across failure categories (Total Evaluated vs Recovered)</CardDescription>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
+                  {report.categoryBreakdown.map((item) => (
+                    <span
+                      key={item.category}
+                      className="px-2 py-0.5 rounded bg-[#181714] border border-[rgba(242,237,227,0.08)] text-[#B7B0A3]"
+                    >
+                      {item.category.replace(/_/g, ' ')}:{' '}
+                      <span className={item.accuracyPercent > 0 ? 'text-[#6F9B7A] font-semibold' : 'text-[#817A70]'}>
+                        {item.accuracyPercent}%
+                      </span>
+                    </span>
+                  ))}
+                </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-5">
-                <div className="h-64 w-full">
+                <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={report.categoryBreakdown.map((item) => ({
                         category: item.category.replace(/_/g, ' ').toUpperCase(),
-                        recovered: item.recoveredCases,
                         total: item.totalCases,
+                        recovered: item.recoveredCases,
                         rate: item.accuracyPercent,
                       }))}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      margin={{ top: 15, right: 15, left: 0, bottom: 20 }}
                     >
                       <CartesianGrid stroke="rgba(242, 237, 227, 0.05)" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="category" stroke="#817A70" fontSize={10} fontFamily="monospace" tickLine={false} />
-                      <YAxis stroke="#817A70" fontSize={10} fontFamily="monospace" tickLine={false} />
+                      <XAxis
+                        dataKey="category"
+                        stroke="#817A70"
+                        fontSize={9}
+                        fontFamily="monospace"
+                        tickLine={false}
+                        interval={0}
+                        angle={-15}
+                        textAnchor="end"
+                      />
+                      <YAxis
+                        stroke="#817A70"
+                        fontSize={10}
+                        fontFamily="monospace"
+                        tickLine={false}
+                        allowDecimals={false}
+                      />
                       <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#1C1B18',
-                          borderColor: 'rgba(242, 237, 227, 0.12)',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontFamily: 'monospace',
-                          color: '#F2EDE3',
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const dataItem = payload[0].payload as {
+                              category: string;
+                              total: number;
+                              recovered: number;
+                              rate: number;
+                            };
+                            return (
+                              <div className="p-3 bg-[#1C1B18] border border-[rgba(242,237,227,0.15)] rounded-md shadow-xl font-mono text-xs space-y-1">
+                                <p className="font-semibold text-[#F2EDE3] text-xs border-b border-[rgba(242,237,227,0.08)] pb-1 mb-1">
+                                  {label}
+                                </p>
+                                <div className="flex justify-between gap-4 text-[#817A70]">
+                                  <span>Total Evaluated:</span>
+                                  <span className="text-[#F2EDE3] font-medium">{dataItem.total} cases</span>
+                                </div>
+                                <div className="flex justify-between gap-4 text-[#817A70]">
+                                  <span>Recovered:</span>
+                                  <span className="text-[#6F9B7A] font-semibold">{dataItem.recovered} cases</span>
+                                </div>
+                                <div className="flex justify-between gap-4 text-[#817A70] pt-1 border-t border-[rgba(242,237,227,0.06)]">
+                                  <span>Recovery Rate:</span>
+                                  <span className="text-[#D1B982] font-semibold">{dataItem.rate}%</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
                         }}
                       />
-                      <Bar dataKey="recovered" name="Recovered Cases" radius={[3, 3, 0, 0]}>
-                        {report.categoryBreakdown.map((_, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]}
-                          />
-                        ))}
-                      </Bar>
+                      <Legend
+                        wrapperStyle={{
+                          fontSize: '11px',
+                          fontFamily: 'monospace',
+                          paddingTop: '12px',
+                        }}
+                      />
+                      <Bar dataKey="total" name="Total Failures" fill="#71879A" radius={[3, 3, 0, 0]} opacity={0.6} />
+                      <Bar dataKey="recovered" name="Recovered Cases" fill="#6F9B7A" radius={[3, 3, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
