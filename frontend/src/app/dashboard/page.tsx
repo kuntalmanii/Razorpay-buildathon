@@ -1,7 +1,7 @@
 import { Header } from '@/components/layout/header';
 import { CommandCenter } from '@/features/dashboard/command-center';
 
-export default function OverviewPage() {
+export default function DashboardPage() {
   return (
     <>
       <Header

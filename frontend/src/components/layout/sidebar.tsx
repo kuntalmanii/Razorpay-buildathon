@@ -22,7 +22,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Overview', href: '/', icon: LayoutDashboard },
+  { label: 'Command Center', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Risk Cases', href: '/recovery-cases', icon: ShieldAlert },
   { label: 'AI Decisions & Safety', href: '/ai-decisions', icon: Bot },
   { label: 'Audit Trail', href: '/audit', icon: ScrollText },
@@ -63,8 +63,8 @@ export function Sidebar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
-              item.href === '/'
-                ? pathname === '/'
+              item.href === '/dashboard'
+                ? pathname === '/' || pathname === '/dashboard'
                 : pathname.startsWith(item.href);
 
             return (
