@@ -18,7 +18,6 @@ import {
   Bot,
   ShieldCheck,
   ShieldAlert,
-  Sparkles,
   Lock,
   CheckCircle2,
   AlertTriangle,
@@ -359,7 +358,7 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
 
             <div className="space-y-1 text-xs">
               <span className="font-medium text-[#B7B0A3] flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-[#B89A62]" /> Reasoning Summary:
+                <Bot className="w-3 h-3 text-[#B89A62]" /> Reasoning Summary:
               </span>
               <p className="text-[#B7B0A3] leading-relaxed bg-[#181714] p-2.5 rounded border border-[rgba(242,237,227,0.06)] text-[11px]">
                 Customer failure diagnosed as {caseData.failure_category}. Estimated recovery probability is {(probNum * 100).toFixed(0)}%. Recommending immediate friction-free intervention with tailored messaging to maximize settlement chances.

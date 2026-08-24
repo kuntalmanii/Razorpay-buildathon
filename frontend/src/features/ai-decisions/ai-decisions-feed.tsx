@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
   Bot,
   ShieldCheck,
-  Sparkles,
   MessageSquare,
   Activity,
   CheckCircle2,
@@ -198,7 +197,7 @@ export function AiDecisionsFeed() {
                       <div className="p-2.5 rounded-md bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-[10px] font-mono uppercase tracking-wider text-[#D1B982] flex items-center gap-1">
-                            <Sparkles className="w-3 h-3" /> 1. AI Recommendation
+                            <Bot className="w-3 h-3" /> 1. AI Recommendation
                           </span>
                           <span className="text-[10px] text-[#817A70] font-mono">Advisory</span>
                         </div>

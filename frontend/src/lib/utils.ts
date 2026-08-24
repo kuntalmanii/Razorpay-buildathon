@@ -36,36 +36,36 @@ export function formatDate(isoString?: string | null): string {
 }
 
 /**
- * Return badge styles and labels for case status.
+ * Return badge styles and labels for case status using RecoverIQ warm editorial tokens.
  */
 export function getStatusBadge(status: string) {
   switch (status.toLowerCase()) {
     case 'recovered':
       return {
         label: 'Recovered',
-        className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        className: 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/25',
       };
     case 'in_progress':
     case 'recovering':
       return {
         label: 'Recovering',
-        className: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        className: 'bg-[#B68B4F]/10 text-[#B68B4F] border-[#B68B4F]/25',
       };
     case 'escalated':
       return {
         label: 'Escalated',
-        className: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+        className: 'bg-[#817A70]/15 text-[#B7B0A3] border-[#817A70]/25',
       };
     case 'unrecoverable':
     case 'failed':
       return {
         label: 'Failed',
-        className: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+        className: 'bg-[#B56F68]/10 text-[#B56F68] border-[#B56F68]/25',
       };
     default:
       return {
         label: 'Open Risk',
-        className: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+        className: 'bg-[#71879A]/10 text-[#71879A] border-[#71879A]/25',
       };
   }
 }

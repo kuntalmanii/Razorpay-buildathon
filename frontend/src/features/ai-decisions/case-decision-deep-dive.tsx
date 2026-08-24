@@ -15,7 +15,6 @@ import {
   ArrowLeft,
   Bot,
   ShieldCheck,
-  Sparkles,
   Lock,
   Activity,
   CheckCircle2,
@@ -186,7 +185,7 @@ export function CaseDecisionDeepDive({ caseId }: CaseDecisionDeepDiveProps) {
               {/* Reasoning Summary */}
               <div className="space-y-1 text-xs">
                 <span className="font-medium text-[#B7B0A3] flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-[#B89A62]" /> Reasoning Summary:
+                  <Bot className="w-3 h-3 text-[#B89A62]" /> Reasoning Summary:
                 </span>
                 <p className="text-[#B7B0A3] text-[11px] leading-relaxed bg-[#181714] p-2.5 rounded border border-[rgba(242,237,227,0.06)]">
                   {reasoning}

@@ -9,7 +9,7 @@ import { TableRowSkeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Badge } from '@/components/ui/badge';
-import { Bot, ShieldCheck, ShieldAlert, Cpu, Sparkles, CheckCircle } from 'lucide-react';
+import { Bot, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export function AiDecisionsView() {
   const [actions, setActions] = useState<RecoveryAction[]>([]);
@@ -21,7 +21,7 @@ export function AiDecisionsView() {
     setError(null);
     try {
       const res = await apiClient.getRecoveryActions({ page: 1, limit: 20 });
-      setActions(res.actions);
+      setActions(res.actions || []);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -34,19 +34,19 @@ export function AiDecisionsView() {
   }, [fetchActions]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl">
       {/* Policy Guard Architecture Banner */}
-      <div className="p-5 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#13161C] to-blue-500/10 border border-amber-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <ShieldCheck className="w-5 h-5" />
+      <div className="p-4 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-[#B89A62]/10 border border-[#B89A62]/25 flex items-center justify-center text-[#D1B982]">
+            <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-stone-100 flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-semibold text-[#F2EDE3] flex items-center gap-2">
               Autonomous AI Reasoning with Deterministic Safety Gates
               <Badge variant="gold">Phase 6 + 7 Active</Badge>
             </h3>
-            <p className="text-xs text-stone-400 mt-0.5 max-w-2xl">
+            <p className="text-xs text-[#817A70] mt-0.5 max-w-2xl leading-relaxed">
               AI models recommend recovery strategies based on customer history and failure telemetry.
               All actions are deterministically validated by the Policy Engine before execution.
             </p>
@@ -55,38 +55,38 @@ export function AiDecisionsView() {
       </div>
 
       {/* Safety Policy Rules Matrix */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-200">
-            <CheckCircle className="w-4 h-4 text-emerald-400" /> Max 2 Retries Enforced
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EDE3]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" /> Max 2 Retries Enforced
           </div>
-          <p className="text-xs text-stone-400">
-            Prevents infinite retry loops on chronically declining cards.
+          <p className="text-xs text-[#817A70] leading-relaxed">
+            Prevents infinite retry loops on chronically declining payment cards.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-200">
-            <CheckCircle className="w-4 h-4 text-emerald-400" /> 24-Hour Retry Cooldown
+        <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EDE3]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" /> 24-Hour Retry Cooldown
           </div>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-[#817A70] leading-relaxed">
             Enforces banking cooldown periods between retries to avoid gateway bans.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-200">
-            <CheckCircle className="w-4 h-4 text-emerald-400" /> Zero Direct Gateway Execution
+        <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EDE3]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" /> Zero Direct Gateway Execution
           </div>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-[#817A70] leading-relaxed">
             AI outputs structured recommendations only; Razorpay credentials are never exposed to LLMs.
           </p>
-        </Card>
+        </div>
       </div>
 
       {/* Recent Actions & Policy Evaluations Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle>AI Decisions & Execution Log</CardTitle>
           <CardDescription>
             Audit log of AI proposals, policy approvals/rejections, and execution outcomes
@@ -116,40 +116,40 @@ export function AiDecisionsView() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#0F1117] text-stone-400 border-b border-[#1E232E]">
+                <thead className="bg-[#181714] text-[#817A70] border-b border-[rgba(242,237,227,0.08)] font-mono text-[11px] uppercase tracking-wider">
                   <tr>
-                    <th className="py-3 px-4 font-medium">Action ID</th>
-                    <th className="py-3 px-4 font-medium">Case ID</th>
-                    <th className="py-3 px-4 font-medium">Proposed Action</th>
-                    <th className="py-3 px-4 font-medium">Origin</th>
-                    <th className="py-3 px-4 font-medium">Policy Status</th>
-                    <th className="py-3 px-4 font-medium">Execution</th>
-                    <th className="py-3 px-4 font-medium">Timestamp</th>
+                    <th className="py-2.5 px-4 font-medium">Action ID</th>
+                    <th className="py-2.5 px-4 font-medium">Case ID</th>
+                    <th className="py-2.5 px-4 font-medium">Proposed Action</th>
+                    <th className="py-2.5 px-4 font-medium">Origin</th>
+                    <th className="py-2.5 px-4 font-medium">Policy Status</th>
+                    <th className="py-2.5 px-4 font-medium">Execution</th>
+                    <th className="py-2.5 px-4 font-medium">Timestamp</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E232E]">
+                <tbody className="divide-y divide-[rgba(242,237,227,0.06)]">
                   {actions.map((act) => {
                     const isPolicyApproved = act.policy_status === 'approved';
                     const isCompleted = act.execution_status === 'completed';
 
                     return (
-                      <tr key={act.action_id} className="hover:bg-[#181C24]/50 transition-colors">
-                        <td className="py-3 px-4 font-mono font-medium text-amber-400">
+                      <tr key={act.action_id} className="hover:bg-[#24221E]/60 transition-colors duration-150">
+                        <td className="py-3 px-4 font-mono font-medium text-[#D1B982]">
                           {act.action_id.slice(0, 16)}...
                         </td>
-                        <td className="py-3 px-4 font-mono text-stone-300">
+                        <td className="py-3 px-4 font-mono text-[#B7B0A3]">
                           {act.case_id.slice(0, 16)}...
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-mono font-semibold text-stone-200">
-                            {act.action_type}
+                          <span className="font-mono font-medium text-[#F2EDE3]">
+                            {act.action_type.replace(/_/g, ' ')}
                           </span>
                         </td>
                         <td className="py-3 px-4">
                           <Badge variant={act.proposed_by === 'ai' ? 'gold' : 'blue'}>
                             {act.proposed_by === 'ai' ? (
                               <>
-                                <Bot className="w-3 h-3 mr-1" /> AI Agent
+                                <Bot className="w-2.5 h-2.5 mr-1" /> AI Agent
                               </>
                             ) : (
                               'System'
@@ -158,10 +158,10 @@ export function AiDecisionsView() {
                         </td>
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
                               isPolicyApproved
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
+                                : 'bg-[#B56F68]/10 text-[#B56F68] border-[#B56F68]/20'
                             }`}
                           >
                             {isPolicyApproved ? 'Approved' : 'Blocked by Policy'}
@@ -169,18 +169,18 @@ export function AiDecisionsView() {
                         </td>
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
                               isCompleted
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
                                 : act.execution_status === 'scheduled'
-                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                : 'bg-stone-800 text-stone-400 border-stone-700'
+                                ? 'bg-[#B68B4F]/10 text-[#B68B4F] border-[#B68B4F]/20'
+                                : 'bg-[#24221E] text-[#817A70] border-[rgba(242,237,227,0.08)]'
                             }`}
                           >
                             {act.execution_status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-stone-400">{formatDate(act.created_at)}</td>
+                        <td className="py-3 px-4 text-[#817A70] font-mono text-[11px]">{formatDate(act.created_at)}</td>
                       </tr>
                     );
                   })}
