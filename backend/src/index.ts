@@ -1,4 +1,4 @@
-import express, { Application } from 'express';
+import express, { Application, Request } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -19,8 +19,18 @@ const app: Application = express();
 
 // ─── Core Middleware ──────────────────────────────────────────────────────────
 app.use(requestId);
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true }));
+
+// JSON parser with raw body buffer capture for HMAC webhook verification
+app.use(
+  express.json({
+    limit: '2mb',
+    verify: (req, _res, buf) => {
+      (req as Request).rawBody = buf.toString('utf-8');
+    },
+  })
+);
+
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(
   cors({
     origin: config.cors.origin,

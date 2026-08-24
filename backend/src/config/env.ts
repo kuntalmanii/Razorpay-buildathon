@@ -74,7 +74,10 @@ function buildConfig(): AppConfig {
 
   const razorpayKeyId = optionalEnv('RAZORPAY_KEY_ID', '');
   const razorpayKeySecret = optionalEnv('RAZORPAY_KEY_SECRET', '');
-  const razorpayWebhookSecret = optionalEnv('RAZORPAY_WEBHOOK_SECRET', '');
+  const razorpayWebhookSecret = isTest
+    ? optionalEnv('RAZORPAY_WEBHOOK_SECRET', 'test_webhook_secret_whsec_12345')
+    : optionalEnv('RAZORPAY_WEBHOOK_SECRET', '');
+
   const isRazorpayConfigured = Boolean(razorpayKeyId && razorpayKeySecret);
   const isRazorpayTestMode = razorpayKeyId.startsWith('rzp_test_');
 
