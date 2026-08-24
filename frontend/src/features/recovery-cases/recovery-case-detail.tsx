@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { RecoveryCase, AuditLog, RecoveryAction } from '@/types/api';
 import { formatINR, formatDate, getStatusBadge } from '@/lib/utils';
@@ -35,6 +36,7 @@ export interface RecoveryCaseDetailProps {
 }
 
 export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
+  const router = useRouter();
   const [caseData, setCaseData] = useState<RecoveryCase | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [actions, setActions] = useState<RecoveryAction[]>([]);
@@ -108,7 +110,7 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
           title="Case Not Found"
           description={`No recovery case was found matching ID: ${caseId}`}
           actionLabel="Back to Cases"
-          onAction={() => window.location.assign('/recovery-cases')}
+          onAction={() => router.push('/recovery-cases')}
         />
       </div>
     );

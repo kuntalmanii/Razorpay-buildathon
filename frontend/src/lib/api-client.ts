@@ -21,6 +21,10 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV === 'development') {
+  console.info('[RecoverIQ Frontend] NEXT_PUBLIC_API_URL unset — using default http://localhost:3001');
+}
+
 class ApiClientError extends Error {
   public statusCode?: number;
   public code?: string;

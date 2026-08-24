@@ -12,6 +12,7 @@ import { requestId } from './middleware/requestId';
 import { requestLogger } from './middleware/requestLogger';
 import { notFound } from './middleware/notFound';
 import { errorHandler } from './middleware/errorHandler';
+import { generalApiLimiter } from './middleware/rateLimiter';
 import { healthRouter } from './routes/health';
 import { apiRouter } from './routes/api';
 
@@ -41,7 +42,7 @@ app.use(requestLogger);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/health', healthRouter);
-app.use('/api', apiRouter);
+app.use('/api', generalApiLimiter, apiRouter);
 
 // ─── 404 + Global Error Handler ───────────────────────────────────────────────
 // notFound must come after all routes; errorHandler must be last
