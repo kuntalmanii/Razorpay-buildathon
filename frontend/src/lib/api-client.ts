@@ -210,8 +210,15 @@ export const apiClient = {
    * Fetch case-specific audit logs
    */
   async getCaseAudit(caseId: string): Promise<AuditLog[] & { logs: AuditLog[]; meta: PaginationMeta }> {
-    const res = await fetchPaginated<AuditLog>(`/api/dashboard/audit?entity_id=${caseId}`);
-    return Object.assign(res.items, { logs: res.items, meta: res.meta });
+    try {
+      const res = await fetchJson<AuditLog[]>(`/api/recovery-cases/${caseId}/audit`);
+      const logs = Array.isArray(res) ? res : [];
+      return Object.assign(logs, { logs, meta: { page: 1, limit: logs.length, total: logs.length, totalPages: 1 } });
+    } catch {
+      const paginated = await fetchPaginated<AuditLog>(`/api/dashboard/audit?entity_id=${caseId}`);
+      const items = paginated.items || [];
+      return Object.assign(items, { logs: items, meta: paginated.meta });
+    }
   },
 
   /**
@@ -222,7 +229,7 @@ export const apiClient = {
     limit?: number;
     entity_type?: string;
     entity_id?: string;
-  }): Promise<AuditLog[] & { logs: AuditLog[]; meta: PaginationMeta }> {
+  }): Promise<{ logs: AuditLog[]; meta: PaginationMeta } & AuditLog[]> {
     const q = new URLSearchParams();
     if (params?.page) q.set('page', params.page.toString());
     if (params?.limit) q.set('limit', params.limit.toString());
@@ -231,7 +238,8 @@ export const apiClient = {
 
     const queryStr = q.toString() ? `?${q.toString()}` : '';
     const res = await fetchPaginated<AuditLog>(`/api/dashboard/audit${queryStr}`);
-    return Object.assign(res.items, { logs: res.items, meta: res.meta });
+    const items = res.items || [];
+    return Object.assign(items, { logs: items, meta: res.meta });
   },
 
   /**

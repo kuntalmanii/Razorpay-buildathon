@@ -41,84 +41,142 @@ export function AuditTimeline() {
     setLoading(true);
     setError(null);
     try {
-      const [casesRes, actionsRes, webhooksRes] = await Promise.all([
-        apiClient.getRecoveryCases({ page: 1, limit: 10 }),
-        apiClient.getRecoveryActions({ page: 1, limit: 15 }),
-        apiClient.getWebhookEvents({ page: 1, limit: 15 }),
+      const [casesRes, actionsRes, webhooksRes, auditRes] = await Promise.all([
+        apiClient.getRecoveryCases({ page: 1, limit: 20 }).catch(() => ({ cases: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } })),
+        apiClient.getRecoveryActions({ page: 1, limit: 20 }).catch(() => ({ actions: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } })),
+        apiClient.getWebhookEvents({ page: 1, limit: 20 }).catch(() => ({ events: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } })),
+        apiClient.getAuditLogs({ page: 1, limit: 50 }).catch(() => ({ logs: [], meta: { page: 1, limit: 50, total: 0, totalPages: 0 } })),
       ]);
 
       const events: TimelineEvent[] = [];
+      const seenIds = new Set<string>();
 
-      // 1. Webhook events (received & verified)
-      for (const w of webhooksRes.events || []) {
+      // 1. Immutable Audit Ledger Records (from DB audit_logs)
+      for (const log of auditRes.logs || []) {
+        const actionUpper = (log.action || '').toUpperCase();
+        let status: 'success' | 'blocked' | 'failed' | 'duplicate' | 'pending' = 'success';
+        if (actionUpper.includes('BLOCK') || actionUpper.includes('REJECT')) {
+          status = 'blocked';
+        } else if (actionUpper.includes('FAIL') || actionUpper.includes('ERROR')) {
+          status = 'failed';
+        } else if (actionUpper.includes('DUPLICATE')) {
+          status = 'duplicate';
+        } else if (actionUpper.includes('PENDING') || actionUpper.includes('SCHEDULE')) {
+          status = 'pending';
+        }
+
+        const formattedAction = log.action.replace(/_/g, ' ').toUpperCase();
+        const eventId = `audit_${log.log_id}`;
+        seenIds.add(eventId);
+
         events.push({
-          id: `wh_${w.event_id}`,
-          timestamp: w.received_at,
-          eventType: 'Webhook Ingress & Signature Check',
-          status: w.signature_verified ? 'success' : 'failed',
-          actor: 'razorpay_webhook_ingress',
-          description: `Razorpay webhook event ${w.event_type} received with HMAC-SHA256 signature verification.`,
-          correlationId: w.razorpay_event_id,
+          id: eventId,
+          timestamp: log.created_at,
+          eventType: formattedAction,
+          status,
+          actor: log.actor_id || log.actor_type || 'system_audit',
+          description: `Immutable audit record: ${formattedAction} on ${log.entity_type} (${log.entity_id}).`,
+          correlationId: log.entity_id,
           details: {
-            eventType: w.event_type,
-            signatureVerified: w.signature_verified,
-            processingStatus: w.processing_status,
+            logId: log.log_id,
+            entityType: log.entity_type,
+            entityId: log.entity_id,
+            action: log.action,
+            actorType: log.actor_type,
+            actorId: log.actor_id,
+            beforeState: log.before_state,
+            afterState: log.after_state,
+            metadata: log.metadata,
           },
         });
       }
 
-      // 2. Risk case lifecycle events
-      for (const c of casesRes.cases || []) {
-        events.push({
-          id: `case_det_${c.case_id}`,
-          timestamp: c.detected_at,
-          eventType: 'Case Created & Risk Evaluated',
-          status: 'success',
-          actor: 'revenue_risk_engine',
-          description: `Detected payment failure (${c.failure_category}) for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Risk score: ${c.risk_score}/100.`,
-          correlationId: c.case_id,
-          details: {
-            caseId: c.case_id,
-            failureCategory: c.failure_category,
-            riskScore: c.risk_score,
-            recoveryProbability: c.recovery_probability,
-          },
-        });
-
-        if (c.status === 'recovered' && c.resolved_at) {
+      // 2. Webhook events (received & verified)
+      for (const w of webhooksRes.events || []) {
+        const eventId = `wh_${w.event_id}`;
+        if (!seenIds.has(eventId)) {
+          seenIds.add(eventId);
           events.push({
-            id: `case_res_${c.case_id}`,
-            timestamp: c.resolved_at,
-            eventType: 'Payment Recovered & Settled',
-            status: 'success',
-            actor: 'payment_verifier',
-            description: `Payment successfully recovered for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Case state marked RECOVERED.`,
-            correlationId: c.case_id,
+            id: eventId,
+            timestamp: w.received_at,
+            eventType: 'Webhook Ingress & Signature Check',
+            status: w.signature_verified ? 'success' : 'failed',
+            actor: 'razorpay_webhook_ingress',
+            description: `Razorpay webhook event ${w.event_type} received with HMAC-SHA256 signature verification.`,
+            correlationId: w.razorpay_event_id,
             details: {
-              caseId: c.case_id,
-              status: c.status,
-              resolvedAt: c.resolved_at,
+              eventType: w.event_type,
+              signatureVerified: w.signature_verified,
+              processingStatus: w.processing_status,
             },
           });
         }
       }
 
-      // 3. Recovery Actions executed & policy verified
+      // 3. Risk case lifecycle events
+      for (const c of casesRes.cases || []) {
+        const caseId = `case_det_${c.case_id}`;
+        if (!seenIds.has(caseId)) {
+          seenIds.add(caseId);
+          events.push({
+            id: caseId,
+            timestamp: c.detected_at,
+            eventType: 'Case Created & Risk Evaluated',
+            status: 'success',
+            actor: 'revenue_risk_engine',
+            description: `Detected payment failure (${c.failure_category}) for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Risk score: ${c.risk_score}/100.`,
+            correlationId: c.case_id,
+            details: {
+              caseId: c.case_id,
+              failureCategory: c.failure_category,
+              riskScore: c.risk_score,
+              recoveryProbability: c.recovery_probability,
+            },
+          });
+        }
+
+        if (c.status === 'recovered' && c.resolved_at) {
+          const resId = `case_res_${c.case_id}`;
+          if (!seenIds.has(resId)) {
+            seenIds.add(resId);
+            events.push({
+              id: resId,
+              timestamp: c.resolved_at,
+              eventType: 'Payment Recovered & Settled',
+              status: 'success',
+              actor: 'payment_verifier',
+              description: `Payment successfully recovered for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Case state marked RECOVERED.`,
+              correlationId: c.case_id,
+              details: {
+                caseId: c.case_id,
+                status: c.status,
+                resolvedAt: c.resolved_at,
+              },
+            });
+          }
+        }
+      }
+
+      // 4. Recovery Actions executed & policy verified
       for (const a of actionsRes.actions || []) {
-        events.push({
-          id: `act_${a.action_id}`,
-          timestamp: a.created_at,
-          eventType: 'Recovery Action Executed',
-          status: a.execution_status === 'completed' ? 'success' : a.execution_status === 'failed' ? 'failed' : 'pending',
-          actor: 'recovery_executor',
-          description: `Dispatched action ${a.action_type.replace(/_/g, ' ')} under deterministic safety policy. Execution: ${a.execution_status.toUpperCase()}.`,
-          correlationId: a.idempotency_key || a.action_id,
-          details: {
-            actionId: a.action_id,
-            executionStatus: a.execution_status,
-            result: a.result,
-          },
-        });
+        const actId = `act_${a.action_id}`;
+        if (!seenIds.has(actId)) {
+          seenIds.add(actId);
+          events.push({
+            id: actId,
+            timestamp: a.created_at,
+            eventType: 'Recovery Action Executed',
+            status: a.execution_status === 'completed' ? 'success' : a.execution_status === 'failed' ? 'failed' : 'pending',
+            actor: 'recovery_executor',
+            description: `Dispatched action ${a.action_type.replace(/_/g, ' ')} under deterministic safety policy. Execution: ${a.execution_status.toUpperCase()}.`,
+            correlationId: a.idempotency_key || a.action_id,
+            details: {
+              actionId: a.action_id,
+              executionStatus: a.execution_status,
+              result: a.result,
+            },
+          });
+        }
       }
 
       // Sort strictly descending by chronological timestamp
