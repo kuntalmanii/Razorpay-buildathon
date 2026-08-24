@@ -1,15 +1,15 @@
 import { Header } from '@/components/layout/header';
-import { AiDecisionsView } from '@/features/ai-decisions/ai-decisions-view';
+import { AiDecisionsFeed } from '@/features/ai-decisions/ai-decisions-feed';
 
 export default function AiDecisionsPage() {
   return (
     <>
       <Header
-        title="AI Decisions & Safety Engine"
-        subtitle="Review autonomous AI recovery recommendations and deterministic policy gate validations"
+        title="AI Decision & Policy Safety Engine"
+        subtitle="3-Tier Separation: AI Recommendation (Advisory) → Policy Decision (Enforced) → Execution Result (Dispatched)"
       />
-      <main className="flex-1 p-8 space-y-6 max-w-7xl">
-        <AiDecisionsView />
+      <main className="flex-1 p-6 md:p-8 space-y-6 max-w-7xl">
+        <AiDecisionsFeed />
       </main>
     </>
   );
