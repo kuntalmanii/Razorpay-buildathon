@@ -113,3 +113,45 @@ export interface WebhookEventItem {
   processing_status: string;
   received_at: string;
 }
+
+export interface EvaluationReport {
+  runId: string;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  datasetSize: number;
+  casesProcessed: number;
+
+  // SYSTEM EVALUATION
+  diagnosisAccuracyPercent: number;
+  recoveryPrecisionPercent: number;
+  recoveryRatePercent: number;
+  falseInterventionRatePercent: number;
+  averageRecoveryTimeHours: number;
+  policyViolationAttemptsBlocked: number;
+  duplicateActionsPrevented: number;
+  humanEscalations: number;
+
+  // BUSINESS IMPACT
+  totalRevenueAtRiskPaise: number;
+  totalRevenueRecoveredPaise: number;
+  recoveryPercentage: number;
+  averageRecoveredAmountPaise: number;
+  successfulRecoveriesCount: number;
+
+  // FAILURE RECOVERY
+  webhookDuplicatesHandled: number;
+  aiFailuresHandled: number;
+  razorpayApiFailuresHandled: number;
+  timeoutsHandled: number;
+  retryAttemptsCount: number;
+  recoveredAfterTechnicalFailureCount: number;
+
+  // CATEGORY ACCURACY
+  categoryBreakdown: Array<{
+    category: string;
+    totalCases: number;
+    recoveredCases: number;
+    accuracyPercent: number;
+  }>;
+}

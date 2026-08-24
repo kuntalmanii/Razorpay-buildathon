@@ -9,6 +9,7 @@ import { casesApiRouter } from './cases';
 import { actionsApiRouter } from './actions';
 import { metricsApiRouter } from './metrics';
 import { webhooksApiRouter } from './webhooks';
+import { evaluationApiRouter } from './evaluation';
 
 export const apiRouter = Router();
 
@@ -18,3 +19,4 @@ apiRouter.use('/recovery-cases', casesApiRouter);
 apiRouter.use('/recovery-actions', actionsApiRouter);
 apiRouter.use('/metrics', metricsApiRouter);
 apiRouter.use('/webhooks', webhooksApiRouter);
+apiRouter.use('/evaluation', evaluationApiRouter);

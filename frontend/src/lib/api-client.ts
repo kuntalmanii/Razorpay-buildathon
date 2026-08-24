@@ -14,6 +14,7 @@ import {
   MetricsSummary,
   WebhookEventItem,
   PaginationMeta,
+  EvaluationReport,
 } from '../types/api';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -180,5 +181,21 @@ export const apiClient = {
    */
   async getHealth(): Promise<{ status: string; timestamp: string }> {
     return fetchJson<{ status: string; timestamp: string }>('/api/health');
+  },
+
+  /**
+   * Fetch the latest benchmark evaluation report
+   */
+  async getEvaluation(): Promise<EvaluationReport | null> {
+    return fetchJson<EvaluationReport | null>('/api/evaluation');
+  },
+
+  /**
+   * Execute an authoritative benchmark evaluation run
+   */
+  async runEvaluation(): Promise<EvaluationReport> {
+    return fetchJson<EvaluationReport>('/api/evaluation/run', {
+      method: 'POST',
+    });
   },
 };

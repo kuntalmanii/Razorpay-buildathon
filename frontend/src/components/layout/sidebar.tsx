@@ -8,7 +8,7 @@ import {
   ShieldAlert,
   Bot,
   ScrollText,
-  Radio,
+  Award,
   Zap,
   CheckCircle2,
 } from 'lucide-react';
@@ -26,7 +26,7 @@ const navItems: NavItem[] = [
   { label: 'Risk Cases', href: '/recovery-cases', icon: ShieldAlert },
   { label: 'AI Decisions & Safety', href: '/ai-decisions', icon: Bot },
   { label: 'Audit Trail', href: '/audit', icon: ScrollText },
-  { label: 'Webhook Live Feed', href: '/evaluation', icon: Radio },
+  { label: 'Benchmark & Evaluation', href: '/evaluation', icon: Award },
 ];
 
 export function Sidebar() {
