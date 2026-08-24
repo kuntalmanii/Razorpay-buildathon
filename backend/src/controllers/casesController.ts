@@ -55,4 +55,18 @@ export class CasesController {
     const logs = await CasesService.getCaseAuditLogs(id);
     sendSuccess(res, logs);
   }
+
+  /**
+   * GET /api/recovery-cases/:id/actions
+   */
+  public static async getCaseActions(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    if (!id || id.trim().length === 0) {
+      throw new ValidationError('Case ID is required');
+    }
+
+    const { ActionsService } = await import('../services/actionsService');
+    const { actions } = await ActionsService.listActions({ case_id: id }, { page: 1, limit: 50, offset: 0 });
+    sendSuccess(res, actions);
+  }
 }

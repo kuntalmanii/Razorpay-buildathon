@@ -11,3 +11,4 @@ export const casesApiRouter = Router();
 casesApiRouter.get('/', asyncHandler(CasesController.listCases));
 casesApiRouter.get('/:id', asyncHandler(CasesController.getCaseById));
 casesApiRouter.get('/:id/audit', asyncHandler(CasesController.getCaseAudit));
+casesApiRouter.get('/:id/actions', asyncHandler(CasesController.getCaseActions));

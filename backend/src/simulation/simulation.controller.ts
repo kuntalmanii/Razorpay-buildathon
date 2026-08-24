@@ -77,12 +77,26 @@ export class SimulationController {
    */
   public static async runScenario(req: Request, res: Response): Promise<void> {
     if (!SimulationController.checkDevOnly(res)) return;
-    const { scenarioType, caseId } = req.body as {
-      scenarioType: SimulationType;
+    const body = req.body as {
+      scenarioType?: SimulationType;
+      scenario?: SimulationType;
       caseId?: string;
     };
+    const scenarioType = body.scenarioType || body.scenario;
 
-    const targetCaseId = caseId || `case_sim_${Date.now()}`;
+    let targetCaseId = body.caseId;
+    if (!targetCaseId) {
+      try {
+        const { getPool } = await import('../database/connection');
+        const pool = getPool();
+        const caseRes = await pool.query<{ case_id: string }>(
+          'SELECT case_id FROM revenue_risk_cases ORDER BY created_at DESC LIMIT 1'
+        );
+        targetCaseId = caseRes.rows[0]?.case_id || 'case_dev_001';
+      } catch {
+        targetCaseId = 'case_dev_001';
+      }
+    }
 
     let result;
     switch (scenarioType) {
