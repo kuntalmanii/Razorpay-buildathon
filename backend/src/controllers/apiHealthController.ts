@@ -4,16 +4,20 @@
 
 import { Request, Response } from 'express';
 import { testConnection } from '../database/connection';
+import { getRazorpayClient } from '../services/razorpay';
 import { sendSuccess } from '../utils/response';
 
 export class ApiHealthController {
   public static async getHealth(_req: Request, res: Response): Promise<void> {
     const db = await testConnection();
+    const razorpayHealth = await getRazorpayClient().healthCheck();
+
+    const isHealthy = db.status === 'ok';
 
     sendSuccess(
       res,
       {
-        status: db.status === 'ok' ? 'ok' : 'degraded',
+        status: isHealthy ? 'ok' : 'degraded',
         service: 'recoveriq-backend',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV ?? 'development',
@@ -23,8 +27,19 @@ export class ApiHealthController {
           pool: db.pool,
           ...(db.error ? { error: db.error } : {}),
         },
+        razorpay: {
+          status: razorpayHealth.status,
+          isTestMode: razorpayHealth.isTestMode,
+          maskedKeyId: razorpayHealth.maskedKeyId,
+          ...(razorpayHealth.error ? { error: razorpayHealth.error } : {}),
+        },
       },
-      db.status === 'ok' ? 200 : 207
+      isHealthy ? 200 : 207
     );
+  }
+
+  public static async getRazorpayHealth(_req: Request, res: Response): Promise<void> {
+    const health = await getRazorpayClient().healthCheck();
+    sendSuccess(res, health);
   }
 }

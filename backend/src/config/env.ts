@@ -49,6 +49,15 @@ export interface AppConfig {
     readonly connectionTimeoutMs: number;
     readonly idleTimeoutMs: number;
   };
+  readonly razorpay: {
+    readonly keyId: string;
+    readonly keySecret: string;
+    readonly webhookSecret: string;
+    readonly isConfigured: boolean;
+    readonly isTestMode: boolean;
+    readonly requestTimeoutMs: number;
+    readonly baseUrl: string;
+  };
   readonly log: {
     readonly level: string;
   };
@@ -62,6 +71,12 @@ function buildConfig(): AppConfig {
   const databaseUrl = isTest
     ? optionalEnv('DATABASE_URL', 'postgresql://localhost:5432/recoveriq_test')
     : requireEnv('DATABASE_URL');
+
+  const razorpayKeyId = optionalEnv('RAZORPAY_KEY_ID', '');
+  const razorpayKeySecret = optionalEnv('RAZORPAY_KEY_SECRET', '');
+  const razorpayWebhookSecret = optionalEnv('RAZORPAY_WEBHOOK_SECRET', '');
+  const isRazorpayConfigured = Boolean(razorpayKeyId && razorpayKeySecret);
+  const isRazorpayTestMode = razorpayKeyId.startsWith('rzp_test_');
 
   return Object.freeze({
     server: {
@@ -80,6 +95,15 @@ function buildConfig(): AppConfig {
       poolMax: optionalInt('DB_POOL_MAX', 10),
       connectionTimeoutMs: optionalInt('DB_CONNECTION_TIMEOUT_MS', 5000),
       idleTimeoutMs: optionalInt('DB_IDLE_TIMEOUT_MS', 30000),
+    },
+    razorpay: {
+      keyId: razorpayKeyId,
+      keySecret: razorpayKeySecret,
+      webhookSecret: razorpayWebhookSecret,
+      isConfigured: isRazorpayConfigured,
+      isTestMode: isRazorpayTestMode,
+      requestTimeoutMs: optionalInt('RAZORPAY_TIMEOUT_MS', 10000),
+      baseUrl: optionalEnv('RAZORPAY_BASE_URL', 'https://api.razorpay.com/v1'),
     },
     log: {
       level: optionalEnv('LOG_LEVEL', isTest ? 'error' : (nodeEnv === 'production' ? 'info' : 'debug')),
