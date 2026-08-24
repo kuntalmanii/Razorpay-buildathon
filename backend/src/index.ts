@@ -1,36 +1,74 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { healthRouter } from './routes/health';
 
-// Load environment variables from .env (if present)
+// Load environment variables before importing anything that reads process.env
 dotenv.config();
 
-const app: Application = express();
-const PORT = process.env.PORT ?? 4000;
+import { config } from './config';
+import { logger } from './utils/logger';
+import { testConnection, closePool } from './database/connection';
+import { requestLogger } from './middleware/requestLogger';
+import { notFound } from './middleware/notFound';
+import { errorHandler } from './middleware/errorHandler';
+import { healthRouter } from './routes/health';
 
-// ─── Middleware ────────────────────────────────────────────────────────────────
-app.use(express.json());
+const app: Application = express();
+
+// ─── Core Middleware ──────────────────────────────────────────────────────────
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    origin: config.cors.origin,
     credentials: true,
   })
 );
+app.use(requestLogger);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/health', healthRouter);
 
-// ─── 404 Catch-all ────────────────────────────────────────────────────────────
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not found' });
-});
+// ─── 404 + Global Error Handler ───────────────────────────────────────────────
+// notFound must come after all routes; errorHandler must be last
+app.use(notFound);
+app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(
-    `[RecoverIQ Backend] Running in ${process.env.NODE_ENV ?? 'development'} mode on http://localhost:${PORT}`
-  );
+async function start(): Promise<void> {
+  // Probe DB connectivity at startup (warn, don't crash — DB may not be ready)
+  logger.info('Probing database connection...');
+  const dbHealth = await testConnection();
+  if (dbHealth.status === 'ok') {
+    logger.info('Database connected', { latency_ms: dbHealth.latency_ms });
+  } else {
+    logger.warn('Database not reachable at startup — check DATABASE_URL', {
+      error: dbHealth.error,
+    });
+  }
+
+  app.listen(config.server.port, () => {
+    logger.info(`RecoverIQ backend started`, {
+      port: config.server.port,
+      env: config.server.nodeEnv,
+      url: `http://localhost:${config.server.port}`,
+    });
+  });
+}
+
+// ─── Graceful Shutdown ────────────────────────────────────────────────────────
+async function shutdown(signal: string): Promise<void> {
+  logger.info(`Received ${signal} — shutting down gracefully`);
+  await closePool();
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+
+start().catch((err) => {
+  logger.error('Failed to start server', { message: err.message });
+  process.exit(1);
 });
 
 export default app;

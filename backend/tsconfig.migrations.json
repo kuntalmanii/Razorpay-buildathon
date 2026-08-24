@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node16",
+    "outDir": "./dist/migrations",
+    "rootDir": "./src/database/migrations"
+  },
+  "include": [
+    "src/database/migrations/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
