@@ -114,39 +114,72 @@ export class RazorpayPaymentLinkService {
 
   /**
    * High-level recovery action: creates a tailored Payment Link for a recovery case.
+   * Supports both object-based options and positional parameters.
    */
-  public async createRecoveryPaymentLink(options: CreateRecoveryLinkOptions): Promise<RazorpayPaymentLink> {
-    if (!options.caseId || options.caseId.trim().length === 0) {
+  public async createRecoveryPaymentLink(
+    optionsOrCaseId: CreateRecoveryLinkOptions | string,
+    amountPaise?: number,
+    customer?: { name?: string; email?: string; contact?: string },
+    options?: { description?: string; expireInHours?: number }
+  ): Promise<RazorpayPaymentLink> {
+    let caseId: string;
+    let amount: number;
+    let currency = 'INR';
+    let customerName: string | undefined;
+    let customerEmail: string | undefined;
+    let customerContact: string | undefined;
+    let description: string | undefined;
+    let expiryHours = 48;
+
+    if (typeof optionsOrCaseId === 'object') {
+      caseId = optionsOrCaseId.caseId;
+      amount = optionsOrCaseId.amountPaise;
+      currency = optionsOrCaseId.currency || 'INR';
+      customerName = optionsOrCaseId.customerName;
+      customerEmail = optionsOrCaseId.customerEmail;
+      customerContact = optionsOrCaseId.customerContact;
+      description = optionsOrCaseId.description;
+      expiryHours = optionsOrCaseId.expiryHours ?? 48;
+    } else {
+      caseId = optionsOrCaseId;
+      amount = amountPaise!;
+      customerName = customer?.name;
+      customerEmail = customer?.email;
+      customerContact = customer?.contact;
+      description = options?.description;
+      expiryHours = options?.expireInHours ?? 48;
+    }
+
+    if (!caseId || caseId.trim().length === 0) {
       throw new ValidationError('Case ID is required for recovery payment link');
     }
 
-    const expiryHours = options.expiryHours ?? 48;
     const expireByUnix = Math.floor(Date.now() / 1000) + expiryHours * 3600;
 
     return this.createPaymentLink({
-      amount: options.amountPaise,
-      currency: options.currency || 'INR',
+      amount,
+      currency,
       accept_partial: false,
-      reference_id: `recov_${options.caseId.slice(0, 30)}`,
-      description: options.description || `Payment recovery for Case #${options.caseId}`,
+      reference_id: `recov_${caseId.slice(0, 30)}`,
+      description: description || `Payment recovery for Case #${caseId}`,
       expire_by: expireByUnix,
       reminder_enable: true,
       customer: {
-        name: options.customerName,
-        email: options.customerEmail,
-        contact: options.customerContact,
+        name: customerName,
+        email: customerEmail,
+        contact: customerContact,
       },
       notify: {
-        email: options.notifyEmail ?? Boolean(options.customerEmail),
-        sms: options.notifySms ?? Boolean(options.customerContact),
+        email: Boolean(customerEmail),
+        sms: Boolean(customerContact),
       },
       notes: {
-        case_id: options.caseId,
+        case_id: caseId,
         source: 'recoveriq_recovery_agent',
-        ...(options.notes || {}),
       },
     });
   }
 }
 
 export const razorpayPaymentLinkService = new RazorpayPaymentLinkService();
+export const paymentLinkService = razorpayPaymentLinkService;

@@ -68,3 +68,4 @@ export class RazorpayPaymentService {
 }
 
 export const razorpayPaymentService = new RazorpayPaymentService();
+export const paymentService = razorpayPaymentService;

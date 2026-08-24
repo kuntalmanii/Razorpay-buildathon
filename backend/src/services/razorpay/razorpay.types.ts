@@ -171,6 +171,7 @@ export interface RazorpayPaymentLink {
   entity: 'payment_link';
   short_url: string;
   amount: number; // in paise
+  amount_paid?: number;
   currency: string;
   status: 'created' | 'partially_paid' | 'paid' | 'cancelled' | 'expired';
   accept_partial?: boolean;
