@@ -94,7 +94,43 @@ export const apiClient = {
    * Fetch aggregated dashboard statistics
    */
   async getDashboardSummary(): Promise<DashboardSummary> {
-    return fetchJson<DashboardSummary>('/api/dashboard/summary');
+    const raw = await fetchJson<Record<string, unknown>>('/api/dashboard/summary');
+
+    // If returned in domain structure { cases, revenue }
+    if (raw && ('cases' in raw || 'revenue' in raw)) {
+      const casesObj = (raw.cases || {}) as Record<string, number>;
+      const revObj = (raw.revenue || {}) as Record<string, string | number>;
+
+      const atRisk = Number(revObj.total_at_risk_paise || 0);
+      const recovered = Number(revObj.total_recovered_paise || 0);
+      const openCases = (casesObj.open || 0) + (casesObj.in_progress || 0);
+      const recoveredCases = casesObj.recovered || 0;
+      const rate = Number(revObj.recovery_rate_pct ?? (atRisk > 0 ? (recovered / atRisk) * 100 : 0));
+
+      return {
+        totalRevenueAtRiskPaise: atRisk,
+        totalRecoveredPaise: recovered,
+        totalOpenCases: openCases,
+        totalRecoveredCases: recoveredCases,
+        recoveryRatePercent: rate,
+        activeAutomationsCount: casesObj.in_progress || 0,
+        recentCases: (raw.recentCases as DashboardSummary['recentCases']) || [],
+        breakdownByFailureCategory:
+          (raw.breakdownByFailureCategory as Record<string, number>) || {},
+      };
+    }
+
+    const typed = raw as unknown as DashboardSummary;
+    return {
+      totalRevenueAtRiskPaise: Number(typed.totalRevenueAtRiskPaise || 0),
+      totalRecoveredPaise: Number(typed.totalRecoveredPaise || 0),
+      totalOpenCases: Number(typed.totalOpenCases || 0),
+      totalRecoveredCases: Number(typed.totalRecoveredCases || 0),
+      recoveryRatePercent: Number(typed.recoveryRatePercent || 0),
+      activeAutomationsCount: Number(typed.activeAutomationsCount || 0),
+      recentCases: typed.recentCases || [],
+      breakdownByFailureCategory: typed.breakdownByFailureCategory || {},
+    };
   },
 
   /**

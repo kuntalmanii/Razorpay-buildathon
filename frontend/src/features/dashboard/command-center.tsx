@@ -206,11 +206,11 @@ export function CommandCenter() {
               <AlertTriangle className="w-3.5 h-3.5 text-[#B56F68]" />
             </div>
             <div className="text-2xl font-bold font-mono text-[#F2EDE3] tracking-tight">
-              {formatINR(summary.totalRevenueAtRiskPaise)}
+              {formatINR(summary?.totalRevenueAtRiskPaise ?? 0)}
             </div>
             <div className="text-[11px] text-[#817A70] flex items-center justify-between font-mono pt-1">
               <span>Unresolved exposure</span>
-              <span className="text-[#B56F68] font-semibold">{summary.totalOpenCases} cases</span>
+              <span className="text-[#B56F68] font-semibold">{summary?.totalOpenCases ?? 0} cases</span>
             </div>
           </div>
 
@@ -224,11 +224,11 @@ export function CommandCenter() {
               <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" />
             </div>
             <div className="text-2xl font-bold font-mono text-[#F2EDE3] tracking-tight">
-              {formatINR(summary.totalRecoveredPaise)}
+              {formatINR(summary?.totalRecoveredPaise ?? 0)}
             </div>
             <div className="text-[11px] text-[#817A70] flex items-center justify-between font-mono pt-1">
               <span>Verified settlements</span>
-              <span className="text-[#6F9B7A] font-semibold">{summary.totalRecoveredCases} saved</span>
+              <span className="text-[#6F9B7A] font-semibold">{summary?.totalRecoveredCases ?? 0} saved</span>
             </div>
           </div>
 
@@ -242,12 +242,12 @@ export function CommandCenter() {
               <TrendingUp className="w-3.5 h-3.5 text-[#71879A]" />
             </div>
             <div className="text-2xl font-bold font-mono text-[#F2EDE3] tracking-tight">
-              {summary.recoveryRatePercent.toFixed(1)}%
+              {(summary?.recoveryRatePercent ?? 0).toFixed(1)}%
             </div>
             <div className="text-[11px] text-[#817A70] flex items-center justify-between font-mono pt-1">
               <span>Success velocity</span>
               <span className="text-[#B7B0A3]">
-                {summary.totalRecoveredCases} / {summary.totalOpenCases + summary.totalRecoveredCases} cases
+                {summary?.totalRecoveredCases ?? 0} / {((summary?.totalOpenCases ?? 0) + (summary?.totalRecoveredCases ?? 0)) || 1} cases
               </span>
             </div>
           </div>
@@ -262,11 +262,11 @@ export function CommandCenter() {
               <Activity className="w-3.5 h-3.5 text-[#B68B4F]" />
             </div>
             <div className="text-2xl font-bold font-mono text-[#F2EDE3] tracking-tight">
-              {summary.totalOpenCases}
+              {summary?.totalOpenCases ?? 0}
             </div>
             <div className="text-[11px] text-[#817A70] flex items-center justify-between font-mono pt-1">
               <span>Failed action rate</span>
-              <span className="text-[#817A70]">{metrics.failedCount ?? 0} past 14d</span>
+              <span className="text-[#817A70]">{metrics?.failedCount ?? 0} past 14d</span>
             </div>
           </div>
         </div>

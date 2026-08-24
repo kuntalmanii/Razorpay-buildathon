@@ -467,10 +467,48 @@ class DevMemoryStore {
 
     // 10. Webhook Events
     if (trimmed.includes('FROM webhook_events')) {
+      if (trimmed.includes('COUNT(*)::int') && trimmed.includes('GROUP BY processing_status')) {
+        const counts: Record<string, number> = {};
+        for (const w of this.webhookEvents) {
+          counts[w.processing_status] = (counts[w.processing_status] || 0) + 1;
+        }
+        const rows = Object.entries(counts).map(([processing_status, count]) => ({ processing_status, count }));
+        return { rows, rowCount: rows.length };
+      }
       if (trimmed.includes('COUNT(*)::int')) {
         return { rows: [{ total: this.webhookEvents.length }], rowCount: 1 };
       }
       return { rows: this.webhookEvents, rowCount: this.webhookEvents.length };
+    }
+
+    // 11. Metrics: Failure Categories
+    if (trimmed.includes('GROUP BY failure_category')) {
+      const counts: Record<string, number> = {};
+      for (const c of this.cases) {
+        counts[c.failure_category] = (counts[c.failure_category] || 0) + 1;
+      }
+      const rows = Object.entries(counts).map(([failure_category, count]) => ({ failure_category, count }));
+      return { rows, rowCount: rows.length };
+    }
+
+    // 12. Metrics: Actions By Type
+    if (trimmed.includes('GROUP BY action_type')) {
+      const counts: Record<string, number> = {};
+      for (const a of this.actions) {
+        counts[a.action_type] = (counts[a.action_type] || 0) + 1;
+      }
+      const rows = Object.entries(counts).map(([action_type, count]) => ({ action_type, count }));
+      return { rows, rowCount: rows.length };
+    }
+
+    // 13. Metrics: Actions By Execution Status
+    if (trimmed.includes('GROUP BY execution_status')) {
+      const counts: Record<string, number> = {};
+      for (const a of this.actions) {
+        counts[a.execution_status] = (counts[a.execution_status] || 0) + 1;
+      }
+      const rows = Object.entries(counts).map(([execution_status, count]) => ({ execution_status, count }));
+      return { rows, rowCount: rows.length };
     }
 
     // Fallback: return empty rows
