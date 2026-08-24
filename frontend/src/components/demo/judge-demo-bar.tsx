@@ -82,7 +82,7 @@ export function JudgeDemoBar() {
         >
           <Play className="w-3.5 h-3.5 fill-[#151513]" />
           <span>Launch Live Demo Scenarios</span>
-          <span className="text-[10px] bg-[#151513]/15 px-1.5 py-0.2 rounded font-mono">4 Scenarios</span>
+          <span className="text-[10px] bg-[#151513]/15 px-1.5 py-0.5 rounded font-mono">4 Scenarios</span>
         </button>
       </div>
 
@@ -192,7 +192,7 @@ export function JudgeDemoBar() {
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-[#F2EDE3]">{step.name}</span>
                             <span
-                              className={`text-[10px] font-mono font-medium px-1.5 py-0.2 rounded ${
+                              className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded ${
                                 step.status === 'PASSED' || step.status === 'RECOVERED'
                                   ? 'bg-[#6F9B7A]/10 text-[#6F9B7A]'
                                   : step.status === 'BLOCKED_BY_SAFETY'

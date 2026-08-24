@@ -139,7 +139,7 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
                 {caseData.case_id}
               </h2>
               <span
-                className={`inline-flex px-2 py-0.2 rounded text-[10px] font-mono font-medium border ${badge.className}`}
+                className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${badge.className}`}
               >
                 {badge.label}
               </span>

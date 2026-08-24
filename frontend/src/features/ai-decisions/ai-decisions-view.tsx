@@ -159,7 +159,7 @@ export function AiDecisionsView() {
                         </td>
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
+                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono font-medium border ${
                               isPolicyApproved
                                 ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
                                 : 'bg-[#B56F68]/10 text-[#B56F68] border-[#B56F68]/20'
@@ -170,7 +170,7 @@ export function AiDecisionsView() {
                         </td>
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
+                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono font-medium border ${
                               isCompleted
                                 ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
                                 : act.execution_status === 'scheduled'

@@ -49,7 +49,7 @@ export function Sidebar() {
                 <span className="font-semibold text-sm tracking-tight text-[#F2EDE3]">
                   Recover<span className="text-[#D1B982]">IQ</span>
                 </span>
-                <span className="text-[10px] font-mono font-medium uppercase px-1.5 py-0.2 rounded bg-[#B89A62]/10 text-[#D1B982] border border-[#B89A62]/20">
+                <span className="text-[10px] font-mono font-medium uppercase px-1.5 py-0.5 rounded bg-[#B89A62]/10 text-[#D1B982] border border-[#B89A62]/20">
                   Agent
                 </span>
               </div>
@@ -84,7 +84,7 @@ export function Sidebar() {
                 <div className="flex items-center gap-2.5">
                   {/* Subtle active left bar indicator */}
                   {isActive && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-4 bg-[#B89A62] rounded-r-sm" />
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#B89A62] rounded-r-sm" />
                   )}
                   <Icon
                     className={cn(
@@ -99,7 +99,7 @@ export function Sidebar() {
                   </span>
                 </div>
                 {item.badge && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#181714] text-[#817A70] font-mono">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#181714] text-[#817A70] font-mono">
                     {item.badge}
                   </span>
                 )}

@@ -16,6 +16,7 @@ import {
   Search,
   Filter,
   Lock,
+  X,
 } from 'lucide-react';
 
 export interface TimelineEvent {
@@ -215,14 +216,23 @@ export function AuditTimeline() {
       <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#817A70]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#817A70] pointer-events-none" />
           <input
             type="text"
             placeholder="Search audit timeline by event, actor, correlation ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md pl-8.5 pr-3 py-1.5 focus:outline-none focus:border-[#B89A62]/50 transition-colors placeholder:text-[#817A70] font-mono"
+            className="w-full bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md pl-9 pr-8 py-1.5 focus:outline-none focus:border-[#B89A62]/50 transition-colors placeholder:text-[#817A70] font-mono"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#817A70] hover:text-[#F2EDE3] p-0.5 rounded transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Status Filter & Refresh */}
@@ -318,7 +328,7 @@ export function AuditTimeline() {
                             {evt.eventType}
                           </span>
                           <span
-                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
+                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono font-medium border ${
                               evt.status === 'success'
                                 ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
                                 : evt.status === 'blocked'

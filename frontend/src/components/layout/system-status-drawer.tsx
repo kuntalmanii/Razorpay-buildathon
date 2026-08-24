@@ -57,7 +57,7 @@ export function SystemStatusDrawer() {
           <span className="text-[#817A70] flex items-center gap-1.5 text-[10px]">
             <Zap className="w-2.5 h-2.5 text-[#B89A62]" /> Gateway
           </span>
-          <span className="font-mono text-[#D1B982] text-[10px] bg-[#B89A62]/10 px-1 py-0.2 rounded border border-[#B89A62]/20">
+          <span className="font-mono text-[#D1B982] text-[10px] bg-[#B89A62]/10 px-1 py-0.5 rounded border border-[#B89A62]/20">
             {health?.razorpay.isTestMode
               ? health.razorpay.maskedKeyId || 'rzp_test_active'
               : 'Test Mode'}

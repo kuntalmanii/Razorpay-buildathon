@@ -252,7 +252,7 @@ export function RecoveryCasesView() {
                         </td>
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${badge.className}`}
+                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono font-medium border ${badge.className}`}
                           >
                             {badge.label}
                           </span>

@@ -20,7 +20,12 @@ import {
   Bot,
   Filter,
   RefreshCw,
+  Plus,
+  Pencil,
+  X,
 } from 'lucide-react';
+import { AddCaseModal } from './add-case-modal';
+import { EditCaseDrawer } from './edit-case-drawer';
 
 /**
  * Deterministically deduce suggested action for display in the table
@@ -57,6 +62,10 @@ export function RecoveryCasesList() {
   const [sortField, setSortField] = useState<'detected_at' | 'amount_at_risk' | 'risk_score' | 'recovery_probability'>('detected_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
+
+  // Add / Edit modals
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCase, setEditingCase] = useState<RecoveryCase | null>(null);
 
   const fetchCases = useCallback(async () => {
     setLoading(true);
@@ -138,14 +147,23 @@ export function RecoveryCasesList() {
       <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] flex flex-wrap items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#817A70]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#817A70] pointer-events-none" />
           <input
             type="text"
             placeholder="Search by Case ID, Customer, Email, Payment ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md pl-8.5 pr-3 py-1.5 focus:outline-none focus:border-[#B89A62]/50 transition-colors placeholder:text-[#817A70] font-mono"
+            className="w-full bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md pl-9 pr-8 py-1.5 focus:outline-none focus:border-[#B89A62]/50 transition-colors placeholder:text-[#817A70] font-mono"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#817A70] hover:text-[#F2EDE3] p-0.5 rounded transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Filter Dropdowns */}
@@ -198,6 +216,17 @@ export function RecoveryCasesList() {
             className="h-7 w-7 p-0 text-[#817A70] hover:text-[#F2EDE3]"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+
+          {/* Add Case Button */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setShowAddModal(true)}
+            className="text-xs font-semibold flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Case
           </Button>
         </div>
       </div>
@@ -390,13 +419,27 @@ export function RecoveryCasesList() {
                           {formatDate(c.detected_at)}
                         </td>
 
-                        {/* Inspect Link */}
+                        {/* Action Buttons */}
                         <td className="py-3 px-4 text-right">
-                          <Link href={`/recovery-cases/${c.case_id}`}>
-                            <Button variant="outline" size="sm" className="text-xs py-1 px-2.5 h-7">
-                              Inspect
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCase(c);
+                              }}
+                              className="text-xs py-1 px-2 h-7 text-[#817A70] hover:text-[#B89A62]"
+                              title="Edit case"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
                             </Button>
-                          </Link>
+                            <Link href={`/recovery-cases/${c.case_id}`}>
+                              <Button variant="outline" size="sm" className="text-xs py-1 px-2.5 h-7">
+                                Inspect
+                              </Button>
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -436,6 +479,30 @@ export function RecoveryCasesList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Case Modal */}
+      {showAddModal && (
+        <AddCaseModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={(newCase) => {
+            setShowAddModal(false);
+            setCases((prev) => [newCase, ...prev]);
+            setMeta((prev) => ({ ...prev, total: prev.total + 1 }));
+          }}
+        />
+      )}
+
+      {/* Edit Case Drawer */}
+      {editingCase && (
+        <EditCaseDrawer
+          caseData={editingCase}
+          onClose={() => setEditingCase(null)}
+          onUpdated={(updated) => {
+            setCases((prev) => prev.map((c) => (c.case_id === updated.case_id ? updated : c)));
+            setEditingCase(null);
+          }}
+        />
+      )}
     </div>
   );
 }
