@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatINR } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -125,7 +125,7 @@ export function AuditTimeline() {
             eventType: 'Case Created & Risk Evaluated',
             status: 'success',
             actor: 'revenue_risk_engine',
-            description: `Detected payment failure (${c.failure_category}) for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Risk score: ${c.risk_score}/100.`,
+            description: `Detected payment failure (${c.failure_category}) for ${formatINR(Number(c.amount_at_risk))}. Risk score: ${c.risk_score}/100.`,
             correlationId: c.case_id,
             details: {
               caseId: c.case_id,
@@ -146,7 +146,7 @@ export function AuditTimeline() {
               eventType: 'Payment Recovered & Settled',
               status: 'success',
               actor: 'payment_verifier',
-              description: `Payment successfully recovered for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Case state marked RECOVERED.`,
+              description: `Payment successfully recovered for ${formatINR(Number(c.recovered_amount || c.amount_at_risk))}. Case state marked RECOVERED.`,
               correlationId: c.case_id,
               details: {
                 caseId: c.case_id,
