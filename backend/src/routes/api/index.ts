@@ -11,8 +11,12 @@ import { metricsApiRouter } from './metrics';
 import { webhooksApiRouter } from './webhooks';
 import { evaluationApiRouter } from './evaluation';
 import { simulationRouter } from '../../simulation/simulation.router';
+import { apiAuthMiddleware } from '../../middleware/apiAuth';
 
 export const apiRouter = Router();
+
+// Apply API authentication middleware across API routes
+apiRouter.use(apiAuthMiddleware);
 
 apiRouter.use('/health', healthApiRouter);
 apiRouter.use('/dashboard', dashboardApiRouter);

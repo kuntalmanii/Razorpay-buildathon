@@ -18,6 +18,7 @@ import {
 import { getPool } from '../database/connection';
 import { UnauthorizedError, ValidationError } from '../utils/errors';
 import { logger } from '../utils/logger';
+import { config } from '../config';
 
 export class RazorpayWebhookService {
   constructor(private readonly router: EventRouter = eventRouter) {}
@@ -48,6 +49,19 @@ export class RazorpayWebhookService {
     const eventType = parsedEvent.event;
     if (!eventType || typeof eventType !== 'string') {
       throw new ValidationError('Invalid webhook payload: missing event field');
+    }
+
+    // 2b. Replay Defense: Validate event timestamp freshness if provided (in non-test environments)
+    if (!config.server.isTest && parsedEvent.created_at && typeof parsedEvent.created_at === 'number') {
+      const eventAgeSeconds = Math.floor(Date.now() / 1000) - parsedEvent.created_at;
+      // Reject events older than 48 hours or future events beyond 5 minutes (clock skew)
+      if (eventAgeSeconds > 172800 || eventAgeSeconds < -300) {
+        logger.warn('Rejected stale or future webhook event', {
+          eventId: headerEventId,
+          eventAgeSeconds,
+        });
+        throw new ValidationError('Webhook event timestamp is outside acceptable clock window');
+      }
     }
 
     // 3. Extract unique event identifier for idempotency

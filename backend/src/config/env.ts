@@ -38,6 +38,7 @@ export interface AppConfig {
     readonly isProduction: boolean;
     readonly isDevelopment: boolean;
     readonly isTest: boolean;
+    readonly apiKey?: string;
   };
   readonly cors: {
     readonly origin: string;
@@ -88,6 +89,7 @@ function buildConfig(): AppConfig {
       isProduction: nodeEnv === 'production',
       isDevelopment: nodeEnv === 'development',
       isTest,
+      apiKey: optionalEnv('RECOVERIQ_API_KEY', ''),
     },
     cors: {
       origin: optionalEnv('CORS_ORIGIN', 'http://localhost:3000'),
