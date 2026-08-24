@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
-import { RecoveryCase, AuditLog, RecoveryAction } from '@/types/api';
+import { RecoveryCase, RecoveryAction, AuditLog } from '@/types/api';
 import { formatINR, formatDate, getStatusBadge } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CardSkeleton } from '@/components/ui/skeleton';
@@ -14,32 +14,30 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
+  Bot,
   ShieldCheck,
   ShieldAlert,
-  Bot,
-  User,
-  CreditCard,
-  History,
-  AlertTriangle,
-  CheckCircle2,
+  Sparkles,
   Lock,
+  CheckCircle2,
+  AlertTriangle,
+  History,
+  CreditCard,
+  User,
   Layers,
   ChevronDown,
   ChevronUp,
-  MessageSquare,
-  Sparkles,
-  Zap,
 } from 'lucide-react';
 
-export interface RecoveryCaseDetailProps {
+interface CaseDetailProps {
   caseId: string;
 }
 
-export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
+export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
   const router = useRouter();
   const [caseData, setCaseData] = useState<RecoveryCase | null>(null);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [actions, setActions] = useState<RecoveryAction[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
@@ -48,15 +46,14 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
     setLoading(true);
     setError(null);
     try {
-      const [c, audit, actsRes] = await Promise.all([
-        apiClient.getRecoveryCase(caseId),
-        apiClient.getCaseAudit(caseId).catch(() => [] as AuditLog[]),
-        apiClient.getRecoveryActions({ page: 1, limit: 10 }).catch(() => ({ actions: [], meta: { page: 1, limit: 10, total: 0, totalPages: 0 } })),
+      const [caseRes, actsRes, auditRes] = await Promise.all([
+        apiClient.getRecoveryCaseById(caseId),
+        apiClient.getRecoveryActions(caseId),
+        apiClient.getCaseAudit(caseId),
       ]);
-      setCaseData(c);
-      setAuditLogs(audit);
-      // Filter actions for this case
-      setActions(actsRes.actions.filter((a) => a.case_id === caseId));
+      setCaseData(caseRes);
+      setActions(actsRes.actions || actsRes);
+      setAuditLogs(auditRes.logs || auditRes);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -71,7 +68,7 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
   if (loading) {
     return (
       <div className="space-y-6 max-w-7xl animate-pulse">
-        <div className="h-10 w-48 bg-[#13161C] rounded-lg" />
+        <div className="h-9 w-48 bg-[#1C1B18] rounded-md" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <CardSkeleton />
           <CardSkeleton />
@@ -79,8 +76,8 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
           <CardSkeleton />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-72 rounded-xl bg-[#13161C] border border-[#232733]" />
-          <div className="h-72 rounded-xl bg-[#13161C] border border-[#232733]" />
+          <div className="h-64 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]" />
+          <div className="h-64 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]" />
         </div>
       </div>
     );
@@ -90,8 +87,8 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
     return (
       <div className="max-w-2xl mx-auto py-12 space-y-4">
         <Link href="/recovery-cases">
-          <Button variant="ghost" size="sm" className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to Recovery Cases
+          <Button variant="ghost" size="sm" className="mb-2">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back to Recovery Cases
           </Button>
         </Link>
         <ErrorState
@@ -122,88 +119,85 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
   const riskNum = Number(caseData.risk_score);
   const probNum = Number(caseData.recovery_probability);
 
-  // Extract latest AI decision & policy audit if present
-  const aiAudit = auditLogs.find((l) => l.action.includes('ai') || l.actor_type === 'ai');
-  const policyAudit = auditLogs.find((l) => l.action.includes('policy') || l.action.includes('approved') || l.action.includes('rejected'));
-
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Back Link & Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#1E232E]">
+    <div className="space-y-6 max-w-7xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150">
+      {/* Breadcrumb Header & Action Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[rgba(242,237,227,0.08)]">
         <div className="flex items-center gap-3">
           <Link href="/recovery-cases">
-            <Button variant="outline" size="sm" className="h-9 px-3">
-              <ArrowLeft className="w-4 h-4 mr-1.5" /> Cases
+            <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs">
+              <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Cases
             </Button>
           </Link>
           <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-lg font-bold text-stone-100 font-mono">
-                Case #{caseData.case_id}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-[#817A70] font-mono">Recovery Cases /</span>
+              <h2 className="text-sm sm:text-base font-semibold text-[#F2EDE3] font-mono">
+                {caseData.case_id}
               </h2>
               <span
-                className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badge.className}`}
+                className={`inline-flex px-2 py-0.2 rounded text-[10px] font-mono font-medium border ${badge.className}`}
               >
                 {badge.label}
               </span>
             </div>
-            <p className="text-xs text-stone-400 mt-0.5">
-              Detected on {formatDate(caseData.detected_at)} • {caseData.merchant_id}
+            <p className="text-[11px] text-[#817A70] font-mono mt-0.5">
+              Detected on {formatDate(caseData.detected_at)} • Merchant: {caseData.merchant_id}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Badge variant="gold">Test Mode Telemetry</Badge>
         </div>
       </div>
 
-      {/* Quick Stat Ribbon (Understandable in 10s) */}
+      {/* 4 Key Stat Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Revenue at Risk */}
-        <Card className="border-rose-500/20 bg-gradient-to-b from-[#161922] to-[#12141A]">
+        <Card className="border-l-2 border-l-[#B56F68]">
           <CardContent className="p-4 space-y-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-rose-400 flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#B56F68] font-medium flex items-center justify-between">
               Revenue At Risk
               <AlertTriangle className="w-3.5 h-3.5" />
             </span>
-            <div className="text-2xl font-bold font-mono text-stone-100">
+            <div className="text-xl font-bold font-mono text-[#F2EDE3]">
               {formatINR(amountNum)}
             </div>
-            <p className="text-[10px] text-stone-400">{caseData.currency} standard exposure</p>
+            <p className="text-[10px] text-[#817A70] font-mono">{caseData.currency} standard exposure</p>
           </CardContent>
         </Card>
 
         {/* Recovered Amount */}
-        <Card glow className="border-amber-500/30 bg-gradient-to-b from-[#191D27] to-[#13161C]">
+        <Card className="border-l-2 border-l-[#6F9B7A]">
           <CardContent className="p-4 space-y-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-amber-400 flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#6F9B7A] font-medium flex items-center justify-between">
               Recovered Revenue
               <CheckCircle2 className="w-3.5 h-3.5" />
             </span>
-            <div className="text-2xl font-bold font-mono text-emerald-400">
+            <div className="text-xl font-bold font-mono text-[#6F9B7A]">
               {formatINR(recoveredNum)}
             </div>
-            <p className="text-[10px] text-stone-400">
-              {caseData.status === 'recovered' ? 'Verified with Razorpay' : 'Pending resolution'}
+            <p className="text-[10px] text-[#817A70] font-mono">
+              {caseData.status === 'recovered' ? 'Verified Settlement' : 'Pending resolution'}
             </p>
           </CardContent>
         </Card>
 
         {/* Risk Score */}
-        <Card className="border-blue-500/20 bg-gradient-to-b from-[#161922] to-[#12141A]">
+        <Card className="border-l-2 border-l-[#71879A]">
           <CardContent className="p-4 space-y-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-blue-400 flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#71879A] font-medium flex items-center justify-between">
               Risk Score
               <ShieldAlert className="w-3.5 h-3.5" />
             </span>
-            <div className="text-2xl font-bold font-mono text-stone-100">
-              {riskNum} <span className="text-xs font-normal text-stone-400">/ 100</span>
+            <div className="text-xl font-bold font-mono text-[#F2EDE3]">
+              {riskNum} <span className="text-xs font-normal text-[#817A70]">/ 100</span>
             </div>
-            <div className="w-full bg-[#1F242E] h-1.5 rounded-full overflow-hidden mt-1.5">
+            <div className="w-full bg-[#24221E] h-1.5 rounded-full overflow-hidden mt-1">
               <div
                 className={`h-full ${
-                  riskNum > 70 ? 'bg-rose-400' : riskNum > 40 ? 'bg-amber-400' : 'bg-emerald-400'
+                  riskNum > 70 ? 'bg-[#B56F68]' : riskNum > 40 ? 'bg-[#B68B4F]' : 'bg-[#6F9B7A]'
                 }`}
                 style={{ width: `${Math.min(100, riskNum)}%` }}
               />
@@ -212,16 +206,16 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
         </Card>
 
         {/* Recovery Probability */}
-        <Card className="border-purple-500/20 bg-gradient-to-b from-[#161922] to-[#12141A]">
+        <Card className="border-l-2 border-l-[#B89A62]">
           <CardContent className="p-4 space-y-1">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-purple-400 flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#B89A62] font-medium flex items-center justify-between">
               Recovery Probability
-              <Zap className="w-3.5 h-3.5" />
+              <Bot className="w-3.5 h-3.5" />
             </span>
-            <div className="text-2xl font-bold font-mono text-emerald-400">
+            <div className="text-xl font-bold font-mono text-[#6F9B7A]">
               {(probNum * 100).toFixed(0)}%
             </div>
-            <p className="text-[10px] text-stone-400">Deterministic decay calculation</p>
+            <p className="text-[10px] text-[#817A70] font-mono">Deterministic decay estimate</p>
           </CardContent>
         </Card>
       </div>
@@ -230,45 +224,45 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Failure Telemetry */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Failure Telemetry & Root Cause</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle>Failure Telemetry & Root Cause</CardTitle>
             <CardDescription>Deterministic gateway event classification</CardDescription>
           </CardHeader>
-          <CardContent className="p-5 space-y-3">
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-lg bg-[#161922] border border-[#232733]">
-                <span className="text-stone-400 block text-[11px]">Classified Category:</span>
-                <span className="font-mono font-semibold text-amber-400 mt-1 block">
+          <CardContent className="p-4 sm:p-5 space-y-3">
+            <div className="grid grid-cols-2 gap-2.5 text-xs">
+              <div className="p-2.5 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)]">
+                <span className="text-[#817A70] block text-[10px] font-mono">Classified Category:</span>
+                <span className="font-mono font-medium text-[#D1B982] mt-0.5 block">
                   {caseData.failure_category}
                 </span>
               </div>
-              <div className="p-3 rounded-lg bg-[#161922] border border-[#232733]">
-                <span className="text-stone-400 block text-[11px]">Gateway Status:</span>
-                <span className="font-mono font-semibold text-stone-200 mt-1 block">
+              <div className="p-2.5 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)]">
+                <span className="text-[#817A70] block text-[10px] font-mono">Gateway Status:</span>
+                <span className="font-mono font-medium text-[#F2EDE3] mt-0.5 block">
                   FAILED_PAYMENT
                 </span>
               </div>
             </div>
 
-            <div className="space-y-2 text-xs pt-1">
+            <div className="space-y-1.5 text-xs pt-1">
               <div className="flex items-center justify-between">
-                <span className="text-stone-400 flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5" /> Razorpay Payment Reference:
+                <span className="text-[#817A70] flex items-center gap-1.5 font-mono text-[11px]">
+                  <CreditCard className="w-3 h-3" /> Razorpay Payment Reference:
                 </span>
-                <span className="font-mono text-stone-200 font-medium">
+                <span className="font-mono text-[#F2EDE3]">
                   {caseData.payment_id || '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-400 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5" /> Subscription Reference:
+                <span className="text-[#817A70] flex items-center gap-1.5 font-mono text-[11px]">
+                  <Layers className="w-3 h-3" /> Subscription Reference:
                 </span>
-                <span className="font-mono text-stone-200 font-medium">
+                <span className="font-mono text-[#F2EDE3]">
                   {caseData.subscription_id || 'One-time Payment'}
                 </span>
               </div>
               {caseData.recovery_reason && (
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
+                <div className="p-2.5 rounded bg-[#6F9B7A]/10 border border-[#6F9B7A]/20 text-[#6F9B7A] text-xs font-mono">
                   <span className="font-semibold block mb-0.5">Resolution Notes:</span>
                   {caseData.recovery_reason}
                 </div>
@@ -279,50 +273,50 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
 
         {/* Customer Context */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Customer & Account Context</CardTitle>
-            <CardDescription>Pristine customer telemetry associated with this failure</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle>Customer & Account Context</CardTitle>
+            <CardDescription>Associated merchant customer telemetry</CardDescription>
           </CardHeader>
-          <CardContent className="p-5 space-y-3">
-            <div className="p-3.5 rounded-lg bg-[#161922] border border-[#232733] flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1F242E] flex items-center justify-center text-stone-300">
-                <User className="w-5 h-5" />
+          <CardContent className="p-4 sm:p-5 space-y-3">
+            <div className="p-3 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] flex items-center gap-3">
+              <div className="w-9 h-9 rounded bg-[#24221E] flex items-center justify-center text-[#817A70] border border-[rgba(242,237,227,0.08)]">
+                <User className="w-4 h-4" />
               </div>
               <div>
-                <div className="font-semibold text-sm text-stone-100">
+                <div className="font-medium text-xs sm:text-sm text-[#F2EDE3]">
                   {caseData.customer_name || 'Guest Checkout Customer'}
                 </div>
-                <div className="text-xs text-stone-400 font-mono">
+                <div className="text-[11px] text-[#817A70] font-mono">
                   {caseData.customer_email || 'No email provided'}
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2 text-xs pt-1">
+            <div className="space-y-1.5 text-xs pt-1 font-mono text-[11px]">
               <div className="flex items-center justify-between">
-                <span className="text-stone-400">Customer ID:</span>
-                <span className="font-mono text-stone-200">{caseData.customer_id || '—'}</span>
+                <span className="text-[#817A70]">Customer ID:</span>
+                <span className="text-[#F2EDE3]">{caseData.customer_id || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-400">Merchant Account ID:</span>
-                <span className="font-mono text-stone-200">{caseData.merchant_id}</span>
+                <span className="text-[#817A70]">Merchant Account ID:</span>
+                <span className="text-[#F2EDE3]">{caseData.merchant_id}</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Row 2: Crucial Visual Distinction: AI Recommendation vs Policy Decision */}
+      {/* Row 2: AI Recommendation vs Deterministic Policy Gate */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: AI Recommendation (Non-executable Proposal) */}
-        <Card className="border-amber-500/30 bg-[#141720]">
-          <CardHeader className="border-b border-amber-500/20 pb-3">
+        {/* Left: AI Recommendation (Advisory Only) */}
+        <Card className="border-[#B89A62]/30">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-amber-500/20 flex items-center justify-center text-amber-400">
+                <div className="w-6 h-6 rounded bg-[#B89A62]/10 border border-[#B89A62]/25 flex items-center justify-center text-[#D1B982]">
                   <Bot className="w-3.5 h-3.5" />
                 </div>
-                <CardTitle className="text-sm text-amber-300">
+                <CardTitle className="text-sm text-[#D1B982]">
                   AI Recovery Recommendation
                 </CardTitle>
               </div>
@@ -330,16 +324,16 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
                 Advisory Only
               </Badge>
             </div>
-            <CardDescription className="text-stone-400">
+            <CardDescription>
               Autonomous reasoning output proposed by RecoverIQ AI Agent
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="p-5 space-y-4">
-            <div className="p-3.5 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-400">Proposed Strategy:</span>
-                <span className="font-mono font-bold text-amber-400 text-sm">
+          <CardContent className="p-4 sm:p-5 space-y-3.5">
+            <div className="p-3 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[#817A70]">Proposed Strategy:</span>
+                <span className="font-bold text-[#D1B982]">
                   {caseData.failure_category.includes('insufficient') || caseData.failure_category.includes('mandate')
                     ? 'PAYMENT_LINK'
                     : riskNum > 65
@@ -347,25 +341,25 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
                     : 'SCHEDULE_RETRY'}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-400">AI Confidence:</span>
-                <span className="font-mono text-amber-300 font-semibold">
+              <div className="flex items-center justify-between">
+                <span className="text-[#817A70]">AI Confidence:</span>
+                <span className="text-[#F2EDE3]">
                   {Math.max(0.75, probNum).toFixed(2)} / 1.00
                 </span>
               </div>
             </div>
 
-            <div className="space-y-1.5 text-xs">
-              <span className="font-semibold text-stone-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Reasoning Summary:
+            <div className="space-y-1 text-xs">
+              <span className="font-medium text-[#B7B0A3] flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-[#B89A62]" /> Reasoning Summary:
               </span>
-              <p className="text-stone-400 leading-relaxed bg-[#111319] p-3 rounded-lg border border-[#232733]">
+              <p className="text-[#B7B0A3] leading-relaxed bg-[#181714] p-2.5 rounded border border-[rgba(242,237,227,0.06)] text-[11px]">
                 Customer failure diagnosed as {caseData.failure_category}. Estimated recovery probability is {(probNum * 100).toFixed(0)}%. Recommending immediate friction-free intervention with tailored messaging to maximize settlement chances.
               </p>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-[#0F1117] border border-[#232733] text-[11px] text-stone-400 flex items-start gap-2">
-              <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="p-2 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] text-[10px] text-[#817A70] flex items-start gap-2 font-mono">
+              <Lock className="w-3 h-3 text-[#B89A62] shrink-0 mt-0.5" />
               <span>
                 <strong>Safety Guarantee:</strong> AI recommendations have zero direct API execution rights. Razorpay credentials are never exposed to LLMs.
               </span>
@@ -374,14 +368,14 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
         </Card>
 
         {/* Right: Policy Decision & Safety Gates (Deterministic Authority) */}
-        <Card className="border-emerald-500/30 bg-[#131720]">
-          <CardHeader className="border-b border-emerald-500/20 pb-3">
+        <Card className="border-[#6F9B7A]/30">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <div className="w-6 h-6 rounded bg-[#6F9B7A]/10 border border-[#6F9B7A]/25 flex items-center justify-center text-[#6F9B7A]">
                   <ShieldCheck className="w-3.5 h-3.5" />
                 </div>
-                <CardTitle className="text-sm text-emerald-300">
+                <CardTitle className="text-sm text-[#6F9B7A]">
                   Deterministic Policy Safety Gate
                 </CardTitle>
               </div>
@@ -389,52 +383,52 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
                 Authoritative Gate
               </Badge>
             </div>
-            <CardDescription className="text-stone-400">
+            <CardDescription>
               Rule-based policy validation enforced before action dispatch
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="p-5 space-y-4">
-            <div className="p-3.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-400">Policy Evaluation:</span>
-                <span className="font-mono font-bold text-emerald-400 text-sm">
+          <CardContent className="p-4 sm:p-5 space-y-3.5">
+            <div className="p-3 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[#817A70]">Policy Evaluation:</span>
+                <span className="font-bold text-[#6F9B7A]">
                   {caseData.status === 'recovered' ? 'RESOLVED' : 'APPROVED_FOR_EXECUTION'}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-400">Human Approval Required:</span>
-                <span className="font-mono text-stone-300">
+              <div className="flex items-center justify-between">
+                <span className="text-[#817A70]">Human Approval Required:</span>
+                <span className="text-[#F2EDE3]">
                   {amountNum >= 1500000 ? 'YES (High Value)' : 'NO (Automated)'}
                 </span>
               </div>
             </div>
 
             {/* Enforced Safety Rules Checklist */}
-            <div className="space-y-2 text-xs">
-              <span className="font-semibold text-stone-300 block">Enforced Safety Rules:</span>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 text-stone-300">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="space-y-1.5 text-xs">
+              <span className="font-medium text-[#B7B0A3] block">Enforced Safety Rules:</span>
+              <div className="space-y-1 font-mono text-[11px]">
+                <div className="flex items-center gap-2 text-[#B7B0A3]">
+                  <CheckCircle2 className="w-3 h-3 text-[#6F9B7A]" />
                   <span>Max retry attempt limit (2) not exceeded</span>
                 </div>
-                <div className="flex items-center gap-2 text-stone-300">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center gap-2 text-[#B7B0A3]">
+                  <CheckCircle2 className="w-3 h-3 text-[#6F9B7A]" />
                   <span>24-hour banking cooldown timer respected</span>
                 </div>
-                <div className="flex items-center gap-2 text-stone-300">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center gap-2 text-[#B7B0A3]">
+                  <CheckCircle2 className="w-3 h-3 text-[#6F9B7A]" />
                   <span>Idempotency key checked (zero duplicate links)</span>
                 </div>
-                <div className="flex items-center gap-2 text-stone-300">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center gap-2 text-[#B7B0A3]">
+                  <CheckCircle2 className="w-3 h-3 text-[#6F9B7A]" />
                   <span>Payment pre-capture verified (stops if already paid)</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-[#0F1117] border border-[#232733] text-[11px] text-stone-400 flex items-start gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="p-2 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] text-[10px] text-[#817A70] flex items-start gap-2 font-mono">
+              <ShieldCheck className="w-3 h-3 text-[#6F9B7A] shrink-0 mt-0.5" />
               <span>
                 <strong>Execution Protocol:</strong> Every action executes under the 10-step protocol with immediate immutable audit logging.
               </span>
@@ -445,8 +439,8 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
 
       {/* Row 3: Executed Recovery Actions */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Executed Recovery Actions</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle>Executed Recovery Actions</CardTitle>
           <CardDescription>
             Historical actions dispatched through the Execution Worker and verified with Razorpay
           </CardDescription>
@@ -461,24 +455,24 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#0F1117] text-stone-400 border-b border-[#1E232E]">
+                <thead className="bg-[#181714] text-[#817A70] border-b border-[rgba(242,237,227,0.08)] font-mono text-[11px] uppercase tracking-wider">
                   <tr>
-                    <th className="py-3 px-4 font-medium">Action ID</th>
-                    <th className="py-3 px-4 font-medium">Action Type</th>
-                    <th className="py-3 px-4 font-medium">Policy Status</th>
-                    <th className="py-3 px-4 font-medium">Execution Status</th>
-                    <th className="py-3 px-4 font-medium">Idempotency Key</th>
-                    <th className="py-3 px-4 font-medium">Executed At</th>
+                    <th className="py-2.5 px-4 font-medium">Action ID</th>
+                    <th className="py-2.5 px-4 font-medium">Action Type</th>
+                    <th className="py-2.5 px-4 font-medium">Policy Status</th>
+                    <th className="py-2.5 px-4 font-medium">Execution Status</th>
+                    <th className="py-2.5 px-4 font-medium">Idempotency Key</th>
+                    <th className="py-2.5 px-4 font-medium">Executed At</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E232E]">
+                <tbody className="divide-y divide-[rgba(242,237,227,0.06)]">
                   {actions.map((act) => (
-                    <tr key={act.action_id} className="hover:bg-[#181C24]/50 transition-colors">
-                      <td className="py-3 px-4 font-mono font-medium text-amber-400">
+                    <tr key={act.action_id} className="hover:bg-[#24221E]/60 transition-colors duration-150">
+                      <td className="py-3 px-4 font-mono font-medium text-[#D1B982]">
                         {act.action_id.slice(0, 16)}...
                       </td>
-                      <td className="py-3 px-4 font-mono font-semibold text-stone-200">
-                        {act.action_type}
+                      <td className="py-3 px-4 font-mono font-medium text-[#F2EDE3]">
+                        {act.action_type.replace(/_/g, ' ')}
                       </td>
                       <td className="py-3 px-4">
                         <Badge variant={act.policy_status === 'approved' ? 'emerald' : 'rose'}>
@@ -487,19 +481,19 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                          className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${
                             act.execution_status === 'completed'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
+                              : 'bg-[#B68B4F]/10 text-[#B68B4F] border-[#B68B4F]/20'
                           }`}
                         >
                           {act.execution_status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-[10px] text-stone-400">
+                      <td className="py-3 px-4 font-mono text-[10px] text-[#817A70]">
                         {act.idempotency_key?.slice(0, 24) || '—'}...
                       </td>
-                      <td className="py-3 px-4 text-stone-400">{formatDate(act.created_at)}</td>
+                      <td className="py-3 px-4 text-[#817A70] font-mono text-[11px]">{formatDate(act.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -511,59 +505,59 @@ export function RecoveryCaseDetail({ caseId }: RecoveryCaseDetailProps) {
 
       {/* Row 4: Immutable Chronological Audit Timeline */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <History className="w-4 h-4 text-amber-400" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <History className="w-3.5 h-3.5 text-[#B89A62]" />
             Immutable Audit Trail Ledger
           </CardTitle>
           <CardDescription>
             Cryptographically timestamped state transitions and decision logs for Case #{caseData.case_id}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-5">
+        <CardContent className="p-4 sm:p-5">
           {auditLogs.length === 0 ? (
-            <p className="text-xs text-stone-400 italic">No audit records found for this case.</p>
+            <p className="text-xs text-[#817A70] italic">No audit records found for this case.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {auditLogs.map((log) => {
                 const isExpanded = expandedLogId === log.log_id;
                 return (
                   <div
                     key={log.log_id}
-                    className="p-3.5 rounded-lg bg-[#141720] border border-[#232733] text-xs space-y-2"
+                    className="p-3 rounded-lg bg-[#181714] border border-[rgba(242,237,227,0.06)] text-xs space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-stone-100">{log.action}</span>
+                        <span className="font-mono font-medium text-[#F2EDE3]">{log.action}</span>
                         <Badge variant={log.actor_type === 'ai' ? 'gold' : 'blue'}>
                           Actor: {log.actor_type}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-[11px] text-stone-400 font-mono">
+                        <span className="text-[10px] text-[#817A70] font-mono">
                           {formatDate(log.created_at)}
                         </span>
                         <button
                           onClick={() => setExpandedLogId(isExpanded ? null : log.log_id)}
-                          className="text-stone-400 hover:text-stone-200 p-1"
+                          className="text-[#817A70] hover:text-[#F2EDE3] p-0.5 rounded transition-colors"
                           aria-label="Toggle details"
                         >
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="pt-2 border-t border-[#1E232E] grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                      <div className="pt-2 border-t border-[rgba(242,237,227,0.06)] grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
                         <div>
-                          <span className="text-stone-400 block mb-1">After State / Outcome:</span>
-                          <pre className="p-2.5 bg-[#0F1117] border border-[#232733] rounded-md overflow-x-auto text-[11px] text-amber-300/90">
+                          <span className="text-[#817A70] block mb-1 text-[10px] uppercase tracking-wider">After State / Outcome:</span>
+                          <pre className="p-2 bg-[#151513] border border-[rgba(242,237,227,0.08)] rounded text-[10px] text-[#D1B982] overflow-x-auto">
                             {JSON.stringify(log.after_state || log.metadata || {}, null, 2)}
                           </pre>
                         </div>
                         <div>
-                          <span className="text-stone-400 block mb-1">Actor ID & Context:</span>
-                          <pre className="p-2.5 bg-[#0F1117] border border-[#232733] rounded-md overflow-x-auto text-[11px] text-stone-300">
+                          <span className="text-[#817A70] block mb-1 text-[10px] uppercase tracking-wider">Actor ID & Context:</span>
+                          <pre className="p-2 bg-[#151513] border border-[rgba(242,237,227,0.08)] rounded text-[10px] text-[#B7B0A3] overflow-x-auto">
                             {JSON.stringify({ actor_id: log.actor_id, entity_type: log.entity_type, entity_id: log.entity_id }, null, 2)}
                           </pre>
                         </div>

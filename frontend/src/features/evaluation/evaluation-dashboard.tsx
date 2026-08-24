@@ -16,19 +16,11 @@ import {
   Play,
   TrendingUp,
   ShieldCheck,
-  ShieldAlert,
-  Bot,
-  Zap,
   CheckCircle2,
   AlertTriangle,
-  Clock,
   RefreshCw,
-  BarChart3,
   Server,
-  Layers,
-  Sparkles,
   DollarSign,
-  Activity,
   Cpu,
 } from 'lucide-react';
 import {
@@ -39,6 +31,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  CartesianGrid,
 } from 'recharts';
 
 export function EvaluationDashboard() {
@@ -77,25 +70,25 @@ export function EvaluationDashboard() {
     }
   };
 
-  const CATEGORY_COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444'];
+  const CATEGORY_COLORS = ['#B89A62', '#6F9B7A', '#71879A', '#B68B4F', '#B56F68'];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 max-w-7xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150">
       {/* Test-Run Hero Banner: Run Evaluation */}
-      <Card glow className="border-amber-500/30 bg-gradient-to-r from-[#181C26] via-[#13161C] to-[#161C24]">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-2">
+      <Card className="border-[#B89A62]/30 bg-[#1C1B18]">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div className="space-y-1.5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Award className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-md bg-[#B89A62]/10 border border-[#B89A62]/25 flex items-center justify-center text-[#D1B982]">
+                  <Award className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-stone-100 flex items-center gap-2">
+                  <h2 className="text-sm sm:text-base font-semibold text-[#F2EDE3] flex items-center gap-2">
                     RecoverIQ Benchmark & Evaluation Suite
                     <Badge variant="gold">Judge Evaluation View</Badge>
                   </h2>
-                  <p className="text-xs text-stone-400">
+                  <p className="text-xs text-[#817A70] font-mono mt-0.5">
                     Measurable empirical proof of deterministic revenue recovery, AI diagnosis precision, and resiliency.
                   </p>
                 </div>
@@ -103,18 +96,18 @@ export function EvaluationDashboard() {
 
               {/* Run Info Metadata */}
               {report ? (
-                <div className="flex flex-wrap items-center gap-4 text-xs font-mono pt-2 text-stone-400">
-                  <span>Run ID: <strong className="text-amber-400">{report.runId}</strong></span>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-mono pt-1 text-[#817A70]">
+                  <span>Run ID: <strong className="text-[#D1B982]">{report.runId}</strong></span>
                   <span>•</span>
-                  <span>Dataset: <strong className="text-stone-200">{report.datasetSize} cases</strong></span>
+                  <span>Dataset: <strong className="text-[#F2EDE3]">{report.datasetSize} cases</strong></span>
                   <span>•</span>
-                  <span>Duration: <strong className="text-stone-200">{report.durationMs}ms</strong></span>
+                  <span>Duration: <strong className="text-[#F2EDE3]">{report.durationMs}ms</strong></span>
                   <span>•</span>
-                  <span>Completed: <strong className="text-stone-200">{formatDate(report.completedAt)}</strong></span>
+                  <span>Completed: <strong className="text-[#F2EDE3]">{formatDate(report.completedAt)}</strong></span>
                 </div>
               ) : (
-                <p className="text-xs text-stone-400 italic pt-1">
-                  Status: <span className="text-amber-400 font-medium">Not evaluated yet.</span> Click &quot;Run Evaluation&quot; to execute the benchmark suite.
+                <p className="text-xs text-[#817A70] italic pt-1 font-mono">
+                  Status: <span className="text-[#D1B982] font-medium">Not evaluated yet.</span> Click &quot;Run Evaluation&quot; to execute the benchmark suite.
                 </p>
               )}
             </div>
@@ -123,22 +116,14 @@ export function EvaluationDashboard() {
             <div className="flex items-center gap-3 shrink-0">
               <Button
                 variant="primary"
-                size="lg"
+                size="md"
                 onClick={handleRunEvaluation}
                 disabled={runningEval}
-                className="gap-2 shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                isLoading={runningEval}
+                className="gap-2 text-xs font-semibold px-4 py-2"
               >
-                {runningEval ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-stone-950" />
-                    Executing Benchmark...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-stone-950" />
-                    Run Evaluation
-                  </>
-                )}
+                {!runningEval && <Play className="w-3.5 h-3.5 fill-[#151513]" />}
+                {runningEval ? 'Executing Benchmark...' : 'Run Evaluation'}
               </Button>
             </div>
           </div>
@@ -167,235 +152,226 @@ export function EvaluationDashboard() {
         <div className="space-y-6">
           {/* 1. SYSTEM EVALUATION METRICS */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-stone-200 uppercase tracking-wider flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-amber-400" />
+            <h3 className="text-xs font-mono font-medium text-[#817A70] uppercase tracking-wider flex items-center gap-2">
+              <Cpu className="w-3.5 h-3.5 text-[#B89A62]" />
               1. System Evaluation & Algorithmic Precision
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {/* Diagnosis Accuracy */}
-              <Card className="p-4 bg-[#141720]">
-                <div className="flex items-center justify-between text-xs text-stone-400">
+              <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]">
+                <div className="flex items-center justify-between text-xs text-[#817A70]">
                   <span>Diagnosis Accuracy</span>
                   <MetricTooltip content="Percentage of payment failures correctly categorized by the deterministic failure classifier." />
                 </div>
-                <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
+                <div className="text-xl font-bold font-mono text-[#6F9B7A] mt-1">
                   {report.diagnosisAccuracyPercent}%
                 </div>
-                <p className="text-[10px] text-stone-400 mt-0.5">Root cause classification</p>
-              </Card>
+                <p className="text-[10px] text-[#817A70] font-mono mt-0.5">Root cause accuracy</p>
+              </div>
 
               {/* Recovery Precision */}
-              <Card className="p-4 bg-[#141720]">
-                <div className="flex items-center justify-between text-xs text-stone-400">
+              <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]">
+                <div className="flex items-center justify-between text-xs text-[#817A70]">
                   <span>Recovery Precision</span>
                   <MetricTooltip content="Ratio of successful recoveries to total interventions initiated." />
                 </div>
-                <div className="text-2xl font-bold font-mono text-amber-400 mt-1">
+                <div className="text-xl font-bold font-mono text-[#D1B982] mt-1">
                   {report.recoveryPrecisionPercent}%
                 </div>
-                <p className="text-[10px] text-stone-400 mt-0.5">Intervention accuracy</p>
-              </Card>
+                <p className="text-[10px] text-[#817A70] font-mono mt-0.5">Intervention accuracy</p>
+              </div>
 
               {/* False Intervention Rate */}
-              <Card className="p-4 bg-[#141720]">
-                <div className="flex items-center justify-between text-xs text-stone-400">
+              <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]">
+                <div className="flex items-center justify-between text-xs text-[#817A70]">
                   <span>False Intervention</span>
                   <MetricTooltip content="Interventions triggered on already-recovered payments or customer opt-outs (guaranteed ~0% by policy engine)." />
                 </div>
-                <div className="text-2xl font-bold font-mono text-stone-100 mt-1">
+                <div className="text-xl font-bold font-mono text-[#F2EDE3] mt-1">
                   {report.falseInterventionRatePercent}%
                 </div>
-                <p className="text-[10px] text-stone-400 mt-0.5">Protected by policy gates</p>
-              </Card>
+                <p className="text-[10px] text-[#817A70] font-mono mt-0.5">Policy protected</p>
+              </div>
 
               {/* Avg Recovery Time */}
-              <Card className="p-4 bg-[#141720]">
-                <div className="flex items-center justify-between text-xs text-stone-400">
+              <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]">
+                <div className="flex items-center justify-between text-xs text-[#817A70]">
                   <span>Avg Recovery Time</span>
                   <MetricTooltip content="Average duration between payment failure detection and confirmed payment settlement." />
                 </div>
-                <div className="text-2xl font-bold font-mono text-blue-400 mt-1">
+                <div className="text-xl font-bold font-mono text-[#71879A] mt-1">
                   {report.averageRecoveryTimeHours}h
                 </div>
-                <p className="text-[10px] text-stone-400 mt-0.5">From detection to settlement</p>
-              </Card>
+                <p className="text-[10px] text-[#817A70] font-mono mt-0.5">Detection to settle</p>
+              </div>
 
               {/* Policy Blocks */}
-              <Card className="p-4 bg-[#141720]">
-                <div className="flex items-center justify-between text-xs text-stone-400">
-                  <span>Policy Violations Blocked</span>
+              <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]">
+                <div className="flex items-center justify-between text-xs text-[#817A70]">
+                  <span>Policy Blocks</span>
                   <MetricTooltip content="Unsafe actions (e.g. unlimited retries, broken cooldowns) intercepted and blocked by the policy engine." />
                 </div>
-                <div className="text-2xl font-bold font-mono text-purple-400 mt-1">
+                <div className="text-xl font-bold font-mono text-[#B68B4F] mt-1">
                   {report.policyViolationAttemptsBlocked}
                 </div>
-                <p className="text-[10px] text-stone-400 mt-0.5">Deterministic rule gates</p>
-              </Card>
+                <p className="text-[10px] text-[#817A70] font-mono mt-0.5">Deterministic gates</p>
+              </div>
             </div>
           </div>
 
           {/* 2. BUSINESS IMPACT METRICS */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-stone-200 uppercase tracking-wider flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-xs font-mono font-medium text-[#817A70] uppercase tracking-wider flex items-center gap-2">
+              <DollarSign className="w-3.5 h-3.5 text-[#6F9B7A]" />
               2. Business Impact & Revenue Retained
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Recovered */}
-              <Card glow className="border-amber-500/30 bg-gradient-to-b from-[#181C26] to-[#13161C]">
-                <CardContent className="p-5 space-y-1">
-                  <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-amber-400">
+              <Card className="border-l-2 border-l-[#6F9B7A]">
+                <CardContent className="p-4 space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#6F9B7A]">
                     <span>Total Revenue Recovered</span>
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-emerald-400">
+                  <div className="text-xl font-bold font-mono text-[#6F9B7A]">
                     {formatINR(report.totalRevenueRecoveredPaise)}
                   </div>
-                  <p className="text-xs text-stone-400">
-                    <span className="text-emerald-400 font-semibold">{report.successfulRecoveriesCount}</span> successful recoveries
+                  <p className="text-[11px] text-[#817A70] font-mono">
+                    <span className="text-[#6F9B7A] font-semibold">{report.successfulRecoveriesCount}</span> saved cases
                   </p>
                 </CardContent>
               </Card>
 
               {/* Total Revenue At Risk */}
-              <Card className="border-rose-500/20 bg-[#141720]">
-                <CardContent className="p-5 space-y-1">
-                  <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-rose-400">
+              <Card className="border-l-2 border-l-[#B56F68]">
+                <CardContent className="p-4 space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#B56F68]">
                     <span>Total Revenue At Risk</span>
-                    <AlertTriangle className="w-4 h-4" />
+                    <AlertTriangle className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-stone-100">
+                  <div className="text-xl font-bold font-mono text-[#F2EDE3]">
                     {formatINR(report.totalRevenueAtRiskPaise)}
                   </div>
-                  <p className="text-xs text-stone-400">
+                  <p className="text-[11px] text-[#817A70] font-mono">
                     {report.casesProcessed} total cases evaluated
                   </p>
                 </CardContent>
               </Card>
 
               {/* Recovery Percentage */}
-              <Card className="border-blue-500/20 bg-[#141720]">
-                <CardContent className="p-5 space-y-1">
-                  <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-blue-400">
+              <Card className="border-l-2 border-l-[#71879A]">
+                <CardContent className="p-4 space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#71879A]">
                     <span>Recovery Percentage</span>
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-stone-100">
+                  <div className="text-xl font-bold font-mono text-[#F2EDE3]">
                     {report.recoveryPercentage}%
                   </div>
-                  <p className="text-xs text-stone-400">Empirical benchmark conversion</p>
+                  <p className="text-[11px] text-[#817A70] font-mono">Empirical benchmark</p>
                 </CardContent>
               </Card>
 
               {/* Average Recovered Amount */}
-              <Card className="border-purple-500/20 bg-[#141720]">
-                <CardContent className="p-5 space-y-1">
-                  <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-purple-400">
+              <Card className="border-l-2 border-l-[#B89A62]">
+                <CardContent className="p-4 space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#B89A62]">
                     <span>Avg Recovered / Case</span>
-                    <Zap className="w-4 h-4" />
+                    <Award className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-stone-100">
+                  <div className="text-xl font-bold font-mono text-[#F2EDE3]">
                     {formatINR(report.averageRecoveredAmountPaise)}
                   </div>
-                  <p className="text-xs text-stone-400">Retained value per intervention</p>
+                  <p className="text-[11px] text-[#817A70] font-mono">Mean unit recovery</p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* 3. FAILURE RECOVERY & RESILIENCY METRICS */}
+          {/* 3. RESILIENCY & FAILURE RECOVERY */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-stone-200 uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-blue-400" />
-              3. Failure Recovery & Fault Resiliency
+            <h3 className="text-xs font-mono font-medium text-[#817A70] uppercase tracking-wider flex items-center gap-2">
+              <Server className="w-3.5 h-3.5 text-[#71879A]" />
+              3. Resiliency & Failure Recovery Scorecard
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <div className="p-3.5 rounded-xl bg-[#141720] border border-[#232733] space-y-1">
-                <span className="text-[11px] text-stone-400 block">Webhook Duplicates:</span>
-                <div className="text-xl font-bold font-mono text-amber-400">
-                  {report.webhookDuplicatesHandled}
-                </div>
-                <p className="text-[10px] text-stone-400">Idempotency shield</p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-semibold text-[#F2EDE3]">Webhook Duplicates Filtered</CardTitle>
+                  <CardDescription>Handled via DB uniqueness constraint</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold font-mono text-[#6F9B7A]">
+                    {report.webhookDuplicatesHandled}
+                  </div>
+                  <p className="text-[10px] text-[#817A70] font-mono mt-1">Zero state corruption</p>
+                </CardContent>
+              </Card>
 
-              <div className="p-3.5 rounded-xl bg-[#141720] border border-[#232733] space-y-1">
-                <span className="text-[11px] text-stone-400 block">AI Faults Handled:</span>
-                <div className="text-xl font-bold font-mono text-blue-400">
-                  {report.aiFailuresHandled}
-                </div>
-                <p className="text-[10px] text-stone-400">Deterministic fallback</p>
-              </div>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-semibold text-[#F2EDE3]">AI & API Timeouts Recovered</CardTitle>
+                  <CardDescription>Handled via bounded retry logic</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold font-mono text-[#D1B982]">
+                    {report.aiFailuresHandled + report.razorpayApiFailuresHandled}
+                  </div>
+                  <p className="text-[10px] text-[#817A70] font-mono mt-1">Graceful fallback executed</p>
+                </CardContent>
+              </Card>
 
-              <div className="p-3.5 rounded-xl bg-[#141720] border border-[#232733] space-y-1">
-                <span className="text-[11px] text-stone-400 block">Gateway 5xx Handled:</span>
-                <div className="text-xl font-bold font-mono text-purple-400">
-                  {report.razorpayApiFailuresHandled}
-                </div>
-                <p className="text-[10px] text-stone-400">Bounded retry</p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#141720] border border-[#232733] space-y-1">
-                <span className="text-[11px] text-stone-400 block">Timeouts Handled:</span>
-                <div className="text-xl font-bold font-mono text-rose-400">
-                  {report.timeoutsHandled}
-                </div>
-                <p className="text-[10px] text-stone-400">Verification pending</p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#141720] border border-[#232733] space-y-1">
-                <span className="text-[11px] text-stone-400 block">Duplicate Actions:</span>
-                <div className="text-xl font-bold font-mono text-emerald-400">
-                  {report.duplicateActionsPrevented}
-                </div>
-                <p className="text-[10px] text-stone-400">Zero double billing</p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#141720] border border-[#232733] space-y-1">
-                <span className="text-[11px] text-stone-400 block">Technical Recovery:</span>
-                <div className="text-xl font-bold font-mono text-emerald-400">
-                  {report.recoveredAfterTechnicalFailureCount}
-                </div>
-                <p className="text-[10px] text-stone-400">Saved after blip</p>
-              </div>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-semibold text-[#F2EDE3]">Recovered After Outage</CardTitle>
+                  <CardDescription>Resumed safely after simulated crash</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold font-mono text-[#6F9B7A]">
+                    {report.recoveredAfterTechnicalFailureCount ?? 0}
+                  </div>
+                  <p className="text-[10px] text-[#817A70] font-mono mt-1">100% state preservation</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
-          {/* 4. CATEGORY ACCURACY CHART & BREAKDOWN */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 4. CATEGORY BREAKDOWN VISUALIZATION */}
+          {report.categoryBreakdown && report.categoryBreakdown.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Accuracy Breakdown by Failure Category</CardTitle>
-                <CardDescription>
-                  Empirical classification and recovery rate across root cause categories
-                </CardDescription>
+              <CardHeader className="pb-2">
+                <CardTitle>Category-Level Recovery Distribution</CardTitle>
+                <CardDescription>Empirical benchmark breakdown across failure categories</CardDescription>
               </CardHeader>
-              <CardContent className="p-5">
+              <CardContent className="p-4 sm:p-5">
                 <div className="h-64 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={report.categoryBreakdown} layout="vertical" margin={{ left: 10, right: 10 }}>
-                      <XAxis type="number" stroke="#4B5563" fontSize={10} domain={[0, 100]} unit="%" />
-                      <YAxis
-                        dataKey="category"
-                        type="category"
-                        stroke="#9CA3AF"
-                        fontSize={9}
-                        width={110}
-                        tickLine={false}
-                      />
+                    <BarChart
+                      data={report.categoryBreakdown.map((item) => ({
+                        category: item.category.replace(/_/g, ' ').toUpperCase(),
+                        recovered: item.recoveredCases,
+                        total: item.totalCases,
+                        rate: item.accuracyPercent,
+                      }))}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid stroke="rgba(242, 237, 227, 0.05)" strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="category" stroke="#817A70" fontSize={10} fontFamily="monospace" tickLine={false} />
+                      <YAxis stroke="#817A70" fontSize={10} fontFamily="monospace" tickLine={false} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#181C24',
-                          borderColor: '#282E3B',
-                          borderRadius: '8px',
+                          backgroundColor: '#1C1B18',
+                          borderColor: 'rgba(242, 237, 227, 0.12)',
+                          borderRadius: '6px',
                           fontSize: '11px',
-                          color: '#F3F4F6',
+                          fontFamily: 'monospace',
+                          color: '#F2EDE3',
                         }}
-                        formatter={(val) => [`${val}%`, 'Accuracy']}
                       />
-                      <Bar dataKey="accuracyPercent" radius={[0, 4, 4, 0]}>
+                      <Bar dataKey="recovered" name="Recovered Cases" radius={[3, 3, 0, 0]}>
                         {report.categoryBreakdown.map((_, index) => (
                           <Cell
                             key={`cell-${index}`}
@@ -408,46 +384,7 @@ export function EvaluationDashboard() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Category Performance Matrix</CardTitle>
-                <CardDescription>Cases processed vs successfully recovered</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#0F1117] text-stone-400 border-b border-[#1E232E]">
-                      <tr>
-                        <th className="py-3 px-4 font-medium">Failure Category</th>
-                        <th className="py-3 px-4 font-medium">Cases</th>
-                        <th className="py-3 px-4 font-medium">Recovered</th>
-                        <th className="py-3 px-4 font-medium text-right">Precision</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#1E232E]">
-                      {report.categoryBreakdown.map((cat) => (
-                        <tr key={cat.category} className="hover:bg-[#181C24]/50 transition-colors">
-                          <td className="py-3 px-4 font-mono font-semibold text-stone-200">
-                            {cat.category}
-                          </td>
-                          <td className="py-3 px-4 font-mono text-stone-300">
-                            {cat.totalCases}
-                          </td>
-                          <td className="py-3 px-4 font-mono text-emerald-400 font-semibold">
-                            {cat.recoveredCases}
-                          </td>
-                          <td className="py-3 px-4 font-mono text-amber-400 font-bold text-right">
-                            {cat.accuracyPercent}%
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          )}
         </div>
       )}
     </div>

@@ -14,14 +14,10 @@ import { Button } from '@/components/ui/button';
 import {
   Bot,
   ShieldCheck,
-  ShieldAlert,
   Sparkles,
-  Lock,
-  ArrowRight,
   MessageSquare,
   Activity,
   CheckCircle2,
-  AlertTriangle,
   RefreshCw,
   ExternalLink,
   ChevronDown,
@@ -39,7 +35,7 @@ export function AiDecisionsFeed() {
     setError(null);
     try {
       const res = await apiClient.getRecoveryActions({ page: 1, limit: 25 });
-      setActions(res.actions);
+      setActions(res.actions || []);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -52,67 +48,73 @@ export function AiDecisionsFeed() {
   }, [fetchActions]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl">
       {/* Policy Guard Architecture Banner */}
-      <div className="p-5 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#13161C] to-blue-500/10 border border-amber-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <ShieldCheck className="w-5 h-5" />
+      <div className="p-4 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-[#B89A62]/10 border border-[#B89A62]/25 flex items-center justify-center text-[#D1B982]">
+            <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-stone-100 flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-semibold text-[#F2EDE3] flex items-center gap-2">
               Autonomous AI Reasoning with Deterministic Safety Gates
               <Badge variant="gold">Phase 6 + 7 Active</Badge>
             </h3>
-            <p className="text-xs text-stone-400 mt-0.5 max-w-2xl">
-              AI models recommend recovery strategies based on customer history and failure telemetry.
+            <p className="text-xs text-[#817A70] mt-0.5 max-w-2xl leading-relaxed">
+              AI models recommend recovery strategies based on failure telemetry and history.
               All actions are deterministically validated by the Policy Engine before execution.
             </p>
           </div>
         </div>
 
-        <Button variant="outline" size="sm" onClick={fetchActions} disabled={loading} className="gap-1.5 shrink-0">
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Decisions
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchActions}
+          disabled={loading}
+          className="gap-1.5 shrink-0 text-xs h-7"
+        >
+          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
       </div>
 
       {/* Safety Policy Rules Matrix */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Max 2 Retries Enforced
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EDE3]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" /> Max 2 Retries Enforced
           </div>
-          <p className="text-xs text-stone-400">
-            Prevents infinite retry loops on chronically declining cards.
+          <p className="text-xs text-[#817A70] leading-relaxed">
+            Prevents infinite retry loops on chronically declining payment methods.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 24-Hour Retry Cooldown
+        <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EDE3]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" /> 24-Hour Retry Cooldown
           </div>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-[#817A70] leading-relaxed">
             Enforces banking cooldown periods between retries to avoid gateway bans.
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-stone-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Zero Direct Gateway Execution
+        <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EDE3]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9B7A]" /> Zero Direct Gateway Execution
           </div>
-          <p className="text-xs text-stone-400">
-            AI outputs structured recommendations only; Razorpay credentials are never exposed to LLMs.
+          <p className="text-xs text-[#817A70] leading-relaxed">
+            AI outputs structured recommendations only; Razorpay keys are never exposed to LLMs.
           </p>
-        </Card>
+        </div>
       </div>
 
       {/* AI Decisions Feed */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-stone-200 uppercase tracking-wider">
+          <h3 className="text-xs font-mono font-medium text-[#817A70] uppercase tracking-wider">
             Decision Audit Log ({actions.length} records)
           </h3>
-          <span className="text-xs text-stone-400 font-mono">
+          <span className="text-[11px] text-[#817A70] font-mono">
             3-Tier Separation: AI Recommendation → Policy Decision → Execution
           </span>
         </div>
@@ -120,7 +122,7 @@ export function AiDecisionsFeed() {
         {error ? (
           <ErrorState title="Failed to load AI decisions" message={error} onRetry={fetchActions} />
         ) : loading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
@@ -132,17 +134,15 @@ export function AiDecisionsFeed() {
             className="py-12"
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {actions.map((act) => {
-              const isPolicyApproved = act.policy_status === 'approved';
-              const isCompleted = act.execution_status === 'completed';
               const isExpanded = expandedActionId === act.action_id;
 
               // Parse payload details if present
               const payload = act.payload as Record<string, unknown> | undefined;
               const result = act.result as Record<string, unknown> | undefined;
 
-              const aiDecision = (payload?.decision as string) || act.action_type.toUpperCase();
+              const aiDecision = (payload?.decision as string) || act.action_type.replace(/_/g, ' ').toUpperCase();
               const confidence = typeof payload?.confidence === 'number' ? payload.confidence : 0.85;
               const customerMessage = payload?.customerMessage as string | undefined;
               const reasoningSummary = (payload?.reasoningSummary as string) || 'Diagnostic reasoning completed based on payment failure category and customer history.';
@@ -150,28 +150,28 @@ export function AiDecisionsFeed() {
               return (
                 <Card
                   key={act.action_id}
-                  className="border-[#232733] hover:border-[#2D3342] transition-colors"
+                  className="hover:border-[rgba(242,237,227,0.15)] transition-colors duration-150"
                 >
-                  <CardHeader className="p-4 pb-3 flex flex-row items-center justify-between border-b border-[#1E232E]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#181C26] border border-[#282E3B] flex items-center justify-center text-amber-400">
-                        <Bot className="w-4 h-4" />
+                  <CardHeader className="p-3.5 pb-2.5 flex flex-row items-center justify-between border-b border-[rgba(242,237,227,0.06)]">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded bg-[#24221E] border border-[rgba(242,237,227,0.08)] flex items-center justify-center text-[#D1B982]">
+                        <Bot className="w-3.5 h-3.5" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-stone-100">
+                          <span className="font-mono text-xs font-medium text-[#F2EDE3]">
                             Action #{act.action_id.slice(0, 16)}...
                           </span>
-                          <span className="text-stone-500">•</span>
+                          <span className="text-[#817A70]">•</span>
                           <Link
                             href={`/recovery-cases/${act.case_id}`}
-                            className="font-mono text-xs text-amber-400 hover:underline flex items-center gap-1"
+                            className="font-mono text-xs text-[#D1B982] hover:underline flex items-center gap-1"
                           >
                             Case #{act.case_id.slice(0, 14)}...
                             <ExternalLink className="w-3 h-3" />
                           </Link>
                         </div>
-                        <p className="text-[10px] text-stone-400 mt-0.5">{formatDate(act.created_at)}</p>
+                        <p className="text-[10px] text-[#817A70] font-mono mt-0.5">{formatDate(act.created_at)}</p>
                       </div>
                     </div>
 
@@ -183,103 +183,103 @@ export function AiDecisionsFeed() {
                       </Link>
                       <button
                         onClick={() => setExpandedActionId(isExpanded ? null : act.action_id)}
-                        className="text-stone-400 hover:text-stone-200 p-1 rounded"
+                        className="text-[#817A70] hover:text-[#F2EDE3] p-1 rounded transition-colors"
                         aria-label="Toggle details"
                       >
-                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </CardHeader>
 
-                  <CardContent className="p-4">
+                  <CardContent className="p-3.5 space-y-3">
                     {/* The 3-Tier Separation Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
                       {/* Tier 1: AI Recommendation */}
-                      <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-2">
+                      <div className="p-2.5 rounded-md bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[10px] uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                          <span className="font-medium text-[10px] font-mono uppercase tracking-wider text-[#D1B982] flex items-center gap-1">
                             <Sparkles className="w-3 h-3" /> 1. AI Recommendation
                           </span>
-                          <span className="text-[10px] text-stone-400 font-mono">Advisory</span>
+                          <span className="text-[10px] text-[#817A70] font-mono">Advisory</span>
                         </div>
-                        <div className="font-mono font-bold text-stone-100 text-sm">{aiDecision}</div>
-                        <div className="flex items-center justify-between text-[11px] text-stone-400">
+                        <div className="font-mono font-medium text-[#F2EDE3] text-xs">{aiDecision}</div>
+                        <div className="flex items-center justify-between text-[10px] text-[#817A70] font-mono">
                           <span>Confidence:</span>
-                          <span className="font-mono text-amber-300 font-semibold">
+                          <span className="text-[#D1B982]">
                             {(confidence * 100).toFixed(0)}%
                           </span>
                         </div>
                       </div>
 
                       {/* Tier 2: Policy Decision */}
-                      <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+                      <div className="p-2.5 rounded-md bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[10px] uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3" /> 2. Policy Decision
+                          <span className="font-medium text-[10px] font-mono uppercase tracking-wider text-[#6F9B7A] flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3" /> 2. Policy Gate
                           </span>
-                          <span className="text-[10px] text-stone-400 font-mono">Enforced</span>
+                          <span className="text-[10px] text-[#817A70] font-mono">Enforced</span>
                         </div>
-                        <div className="font-mono font-bold text-emerald-400 text-sm uppercase">
+                        <div className="font-mono font-medium text-[#6F9B7A] text-xs uppercase">
                           {act.policy_status}
                         </div>
-                        <div className="flex items-center justify-between text-[11px] text-stone-400">
+                        <div className="flex items-center justify-between text-[10px] text-[#817A70] font-mono">
                           <span>Rule Gates:</span>
-                          <span className="text-emerald-400 font-medium">All Passed</span>
+                          <span className="text-[#6F9B7A]">All Passed</span>
                         </div>
                       </div>
 
                       {/* Tier 3: Execution Result */}
-                      <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20 space-y-2">
+                      <div className="p-2.5 rounded-md bg-[#181714] border border-[rgba(242,237,227,0.06)] space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[10px] uppercase tracking-wider text-blue-400 flex items-center gap-1">
-                            <Activity className="w-3 h-3" /> 3. Execution Result
+                          <span className="font-medium text-[10px] font-mono uppercase tracking-wider text-[#71879A] flex items-center gap-1">
+                            <Activity className="w-3 h-3" /> 3. Execution
                           </span>
-                          <span className="text-[10px] text-stone-400 font-mono">Worker</span>
+                          <span className="text-[10px] text-[#817A70] font-mono">Worker</span>
                         </div>
-                        <div className="font-mono font-bold text-blue-400 text-sm uppercase">
+                        <div className="font-mono font-medium text-[#71879A] text-xs uppercase">
                           {act.execution_status}
                         </div>
-                        <div className="flex items-center justify-between text-[11px] text-stone-400 font-mono truncate">
+                        <div className="flex items-center justify-between text-[10px] text-[#817A70] font-mono truncate">
                           <span>Key:</span>
-                          <span className="text-stone-300 truncate max-w-[120px]">
-                            {act.idempotency_key?.slice(0, 18) || '—'}...
+                          <span className="text-[#B7B0A3] truncate max-w-[100px]">
+                            {act.idempotency_key?.slice(0, 16) || '—'}...
                           </span>
                         </div>
                       </div>
                     </div>
 
                     {/* Reasoning Summary preview */}
-                    <div className="mt-3 text-xs text-stone-400 bg-[#0F1117] p-2.5 rounded-lg border border-[#1E232E] flex items-start gap-2">
-                      <Bot className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>
-                        <strong className="text-stone-300">Diagnosis:</strong> {reasoningSummary}
+                    <div className="text-xs text-[#817A70] bg-[#181714] p-2.5 rounded border border-[rgba(242,237,227,0.06)] flex items-start gap-2">
+                      <Bot className="w-3.5 h-3.5 text-[#B89A62] shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">
+                        <strong className="text-[#F2EDE3]">Diagnosis:</strong> {reasoningSummary}
                       </span>
                     </div>
 
                     {/* Expandable Technical Details */}
                     {isExpanded && (
-                      <div className="mt-4 pt-3 border-t border-[#1E232E] space-y-3 animate-in fade-in duration-150">
+                      <div className="pt-2.5 border-t border-[rgba(242,237,227,0.06)] space-y-2.5 animate-in fade-in duration-100">
                         {customerMessage && (
                           <div className="space-y-1">
-                            <span className="text-xs font-semibold text-stone-300 flex items-center gap-1.5">
-                              <MessageSquare className="w-3.5 h-3.5 text-amber-400" /> Customer-Facing Message Copy:
+                            <span className="text-xs font-medium text-[#F2EDE3] flex items-center gap-1.5">
+                              <MessageSquare className="w-3 h-3 text-[#B89A62]" /> Customer Copy:
                             </span>
-                            <p className="text-xs text-stone-300 bg-[#161922] p-3 rounded-lg border border-[#232733] italic">
+                            <p className="text-xs text-[#B7B0A3] bg-[#181714] p-2.5 rounded border border-[rgba(242,237,227,0.06)] italic">
                               &ldquo;{customerMessage}&rdquo;
                             </p>
                           </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs font-mono">
                           <div>
-                            <span className="text-stone-400 block mb-1">Execution Payload:</span>
-                            <pre className="p-2.5 bg-[#0F1117] border border-[#232733] rounded-md overflow-x-auto text-[11px] text-amber-300/90">
+                            <span className="text-[#817A70] block mb-1 text-[10px] uppercase tracking-wider">Execution Payload:</span>
+                            <pre className="p-2 bg-[#151513] border border-[rgba(242,237,227,0.08)] rounded text-[10px] text-[#D1B982] overflow-x-auto">
                               {JSON.stringify(payload || {}, null, 2)}
                             </pre>
                           </div>
                           <div>
-                            <span className="text-stone-400 block mb-1">Worker Result:</span>
-                            <pre className="p-2.5 bg-[#0F1117] border border-[#232733] rounded-md overflow-x-auto text-[11px] text-emerald-300/90">
+                            <span className="text-[#817A70] block mb-1 text-[10px] uppercase tracking-wider">Worker Result:</span>
+                            <pre className="p-2 bg-[#151513] border border-[rgba(242,237,227,0.08)] rounded text-[10px] text-[#6F9B7A] overflow-x-auto">
                               {JSON.stringify(result || { status: act.execution_status }, null, 2)}
                             </pre>
                           </div>

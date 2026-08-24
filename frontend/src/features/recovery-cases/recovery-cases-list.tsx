@@ -17,7 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  ShieldAlert,
   Bot,
   Filter,
   RefreshCw,
@@ -69,8 +68,8 @@ export function RecoveryCasesList() {
         status: statusFilter || undefined,
         failureCategory: categoryFilter || undefined,
       });
-      setCases(res.cases);
-      setMeta(res.meta);
+      setCases(res.cases || []);
+      setMeta(res.meta || { page: 1, limit: 10, total: 0, totalPages: 0 });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -101,8 +100,8 @@ export function RecoveryCasesList() {
 
     // Sort
     result.sort((a, b) => {
-      let valA: number | string = 0;
-      let valB: number | string = 0;
+      let valA: number = 0;
+      let valB: number = 0;
 
       if (sortField === 'amount_at_risk') {
         valA = Number(a.amount_at_risk);
@@ -118,9 +117,7 @@ export function RecoveryCasesList() {
         valB = new Date(b.detected_at).getTime();
       }
 
-      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
+      return sortOrder === 'asc' ? valA - valB : valB - valA;
     });
 
     return result;
@@ -128,7 +125,7 @@ export function RecoveryCasesList() {
 
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
       setSortOrder('desc');
@@ -136,26 +133,26 @@ export function RecoveryCasesList() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl">
       {/* Search & Filter Toolbar */}
-      <div className="p-4 rounded-xl bg-[#13161C] border border-[#232733] flex flex-wrap items-center justify-between gap-4">
+      <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] flex flex-wrap items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#817A70]" />
           <input
             type="text"
-            placeholder="Search by Case ID, Customer, Payment ID..."
+            placeholder="Search by Case ID, Customer, Email, Payment ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#181C24] border border-[#282E3B] text-stone-200 text-xs rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-stone-400"
+            className="w-full bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md pl-8.5 pr-3 py-1.5 focus:outline-none focus:border-[#B89A62]/50 transition-colors placeholder:text-[#817A70] font-mono"
           />
         </div>
 
         {/* Filter Dropdowns */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Status Filter */}
           <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-stone-400" />
+            <Filter className="w-3.5 h-3.5 text-[#817A70]" />
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -163,7 +160,7 @@ export function RecoveryCasesList() {
                 setPage(1);
               }}
               aria-label="Filter by case status"
-              className="bg-[#181C24] border border-[#282E3B] text-stone-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500"
+              className="bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#B89A62]/50 font-mono"
             >
               <option value="">All Statuses</option>
               <option value="open">Open</option>
@@ -182,7 +179,7 @@ export function RecoveryCasesList() {
               setPage(1);
             }}
             aria-label="Filter by failure category"
-            className="bg-[#181C24] border border-[#282E3B] text-stone-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500"
+            className="bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#B89A62]/50 font-mono"
           >
             <option value="">All Failure Categories</option>
             <option value="insufficient_funds">Insufficient Funds</option>
@@ -193,7 +190,13 @@ export function RecoveryCasesList() {
             <option value="customer_abandoned">Customer Abandoned</option>
           </select>
 
-          <Button variant="ghost" size="sm" onClick={fetchCases} aria-label="Refresh list">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchCases}
+            aria-label="Refresh list"
+            className="h-7 w-7 p-0 text-[#817A70] hover:text-[#F2EDE3]"
+          >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
@@ -201,14 +204,14 @@ export function RecoveryCasesList() {
 
       {/* Main Cases Table */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div>
             <CardTitle>Revenue Risk Cases</CardTitle>
             <CardDescription>
               Telemetry feed of diagnosed payment failures, risk probabilities, and recovery recommendations
             </CardDescription>
           </div>
-          <div className="text-xs text-stone-400 font-mono">
+          <div className="text-xs text-[#817A70] font-mono">
             Showing {processedCases.length} of {meta.total} cases
           </div>
         </CardHeader>
@@ -251,21 +254,21 @@ export function RecoveryCasesList() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#0F1117] text-stone-400 border-b border-[#1E232E]">
+                <thead className="bg-[#181714] text-[#817A70] border-b border-[rgba(242,237,227,0.08)] font-mono text-[11px] uppercase tracking-wider">
                   <tr>
-                    <th className="py-3 px-4 font-medium">Case ID</th>
-                    <th className="py-3 px-4 font-medium">Customer</th>
+                    <th className="py-2.5 px-4 font-medium">Case ID</th>
+                    <th className="py-2.5 px-4 font-medium">Customer</th>
                     <th
-                      className="py-3 px-4 font-medium cursor-pointer hover:text-stone-200 select-none"
+                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
                       onClick={() => toggleSort('amount_at_risk')}
                     >
                       <div className="flex items-center gap-1">
                         Amount at Risk <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="py-3 px-4 font-medium">Failure Category</th>
+                    <th className="py-2.5 px-4 font-medium">Failure Category</th>
                     <th
-                      className="py-3 px-4 font-medium cursor-pointer hover:text-stone-200 select-none"
+                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
                       onClick={() => toggleSort('risk_score')}
                     >
                       <div className="flex items-center gap-1">
@@ -273,27 +276,27 @@ export function RecoveryCasesList() {
                       </div>
                     </th>
                     <th
-                      className="py-3 px-4 font-medium cursor-pointer hover:text-stone-200 select-none"
+                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
                       onClick={() => toggleSort('recovery_probability')}
                     >
                       <div className="flex items-center gap-1">
                         Recovery Prob. <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="py-3 px-4 font-medium">Status</th>
-                    <th className="py-3 px-4 font-medium">Recommended Action</th>
+                    <th className="py-2.5 px-4 font-medium">Status</th>
+                    <th className="py-2.5 px-4 font-medium">Recommended Action</th>
                     <th
-                      className="py-3 px-4 font-medium cursor-pointer hover:text-stone-200 select-none"
+                      className="py-2.5 px-4 font-medium cursor-pointer hover:text-[#F2EDE3] select-none transition-colors"
                       onClick={() => toggleSort('detected_at')}
                     >
                       <div className="flex items-center gap-1">
                         Detected <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="py-3 px-4 font-medium text-right">Details</th>
+                    <th className="py-2.5 px-4 font-medium text-right">Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E232E]">
+                <tbody className="divide-y divide-[rgba(242,237,227,0.06)]">
                   {processedCases.map((c) => {
                     const badge = getStatusBadge(c.status);
                     const riskNum = Number(c.risk_score);
@@ -304,13 +307,13 @@ export function RecoveryCasesList() {
                     return (
                       <tr
                         key={c.case_id}
-                        className="hover:bg-[#181C24]/60 transition-colors group"
+                        className="hover:bg-[#24221E]/60 transition-colors duration-150 group"
                       >
                         {/* Case ID */}
-                        <td className="py-3.5 px-4 font-mono font-medium">
+                        <td className="py-3 px-4 font-mono font-medium">
                           <Link
                             href={`/recovery-cases/${c.case_id}`}
-                            className="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1"
+                            className="text-[#D1B982] hover:text-[#F2EDE3] hover:underline flex items-center gap-1 transition-colors"
                           >
                             {c.case_id.slice(0, 16)}...
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -318,41 +321,41 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Customer */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-medium text-stone-200">
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-[#F2EDE3]">
                             {c.customer_name || 'Guest / Merchant Order'}
                           </div>
-                          <div className="text-[10px] text-stone-400 font-mono">
+                          <div className="text-[10px] text-[#817A70] font-mono">
                             {c.customer_email || c.customer_id?.slice(0, 14) || '—'}
                           </div>
                         </td>
 
                         {/* Amount */}
-                        <td className="py-3.5 px-4 font-mono font-semibold text-stone-100">
+                        <td className="py-3 px-4 font-mono font-semibold text-[#F2EDE3]">
                           {formatINR(amountNum)}
                         </td>
 
                         {/* Failure Category */}
-                        <td className="py-3.5 px-4">
-                          <span className="font-mono text-[11px] text-stone-300">
+                        <td className="py-3 px-4">
+                          <span className="font-mono text-[11px] text-[#B7B0A3]">
                             {c.failure_category}
                           </span>
                         </td>
 
                         {/* Risk Score */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs text-stone-200 font-medium">
+                            <span className="font-mono text-xs text-[#F2EDE3] font-medium">
                               {riskNum}
                             </span>
-                            <div className="w-12 bg-[#1F242E] h-1.5 rounded-full overflow-hidden">
+                            <div className="w-12 bg-[#24221E] h-1.5 rounded-full overflow-hidden">
                               <div
                                 className={`h-full ${
                                   riskNum > 70
-                                    ? 'bg-rose-400'
+                                    ? 'bg-[#B56F68]'
                                     : riskNum > 40
-                                    ? 'bg-amber-400'
-                                    : 'bg-emerald-400'
+                                    ? 'bg-[#B68B4F]'
+                                    : 'bg-[#6F9B7A]'
                                 }`}
                                 style={{ width: `${Math.min(100, riskNum)}%` }}
                               />
@@ -361,21 +364,21 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Recovery Probability */}
-                        <td className="py-3.5 px-4 font-mono font-semibold text-emerald-400">
+                        <td className="py-3 px-4 font-mono font-semibold text-[#6F9B7A]">
                           {(probNum * 100).toFixed(0)}%
                         </td>
 
                         {/* Status */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3 px-4">
                           <span
-                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border ${badge.className}`}
+                            className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${badge.className}`}
                           >
                             {badge.label}
                           </span>
                         </td>
 
                         {/* Recommended Action */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3 px-4">
                           <Badge variant={recommended.variant} className="text-[10px] py-0.5 font-mono">
                             <Bot className="w-2.5 h-2.5 mr-1" />
                             {recommended.label}
@@ -383,14 +386,14 @@ export function RecoveryCasesList() {
                         </td>
 
                         {/* Detected Time */}
-                        <td className="py-3.5 px-4 text-stone-400">
+                        <td className="py-3 px-4 text-[#817A70] font-mono text-[11px]">
                           {formatDate(c.detected_at)}
                         </td>
 
                         {/* Inspect Link */}
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-3 px-4 text-right">
                           <Link href={`/recovery-cases/${c.case_id}`}>
-                            <Button variant="outline" size="sm" className="text-xs">
+                            <Button variant="outline" size="sm" className="text-xs py-1 px-2.5 h-7">
                               Inspect
                             </Button>
                           </Link>
@@ -405,8 +408,8 @@ export function RecoveryCasesList() {
 
           {/* Pagination Controls */}
           {meta.totalPages > 1 && (
-            <div className="p-4 border-t border-[#1E232E] flex items-center justify-between">
-              <div className="text-xs text-stone-400">
+            <div className="p-3.5 border-t border-[rgba(242,237,227,0.08)] flex items-center justify-between text-xs text-[#817A70] font-mono">
+              <div>
                 Page {meta.page} of {meta.totalPages} ({meta.total} total cases)
               </div>
               <div className="flex items-center gap-2">
@@ -415,16 +418,18 @@ export function RecoveryCasesList() {
                   size="sm"
                   disabled={meta.page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="h-7 text-xs"
                 >
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                  <ChevronLeft className="w-3.5 h-3.5 mr-1" /> Prev
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={meta.page >= meta.totalPages}
                   onClick={() => setPage((p) => p + 1)}
+                  className="h-7 text-xs"
                 >
-                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                  Next <ChevronRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
               </div>
             </div>

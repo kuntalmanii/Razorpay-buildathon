@@ -36,9 +36,12 @@ export function Sidebar() {
     <aside className="w-64 flex-shrink-0 bg-[#181714] border-r border-[rgba(242,237,227,0.08)] flex flex-col justify-between h-screen sticky top-0">
       {/* Brand Header */}
       <div>
-        <div className="p-5 border-b border-[rgba(242,237,227,0.08)]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-[#B89A62] flex items-center justify-center text-[#151513] font-bold shadow-none">
+        <div className="p-4 sm:p-5 border-b border-[rgba(242,237,227,0.08)]">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#B89A62] rounded-md p-1 -m-1"
+          >
+            <div className="w-7 h-7 rounded-md bg-[#B89A62] flex items-center justify-center text-[#151513] font-bold transition-transform duration-150 group-hover:scale-[1.03]">
               <Zap className="w-4 h-4 fill-[#151513]" />
             </div>
             <div>
@@ -52,11 +55,11 @@ export function Sidebar() {
               </div>
               <p className="text-[11px] text-[#817A70] font-mono">Autonomous Revenue Recovery</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation Links */}
-        <nav className="p-3 space-y-1">
+        <nav className="p-3 space-y-0.5">
           <div className="px-3 py-2 text-[10px] font-mono font-medium uppercase tracking-wider text-[#817A70]">
             Operations
           </div>
@@ -72,25 +75,31 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors group',
+                  'relative flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-all duration-150 ease-out group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#B89A62]',
                   isActive
-                    ? 'bg-[#B89A62]/10 text-[#D1B982] border border-[#B89A62]/25'
-                    : 'text-[#B7B0A3] hover:text-[#F2EDE3] hover:bg-[#201F1B]'
+                    ? 'bg-[#24221E] text-[#F2EDE3] font-semibold border border-[rgba(242,237,227,0.08)]'
+                    : 'text-[#B7B0A3] hover:text-[#F2EDE3] hover:bg-[#201F1B] border border-transparent'
                 )}
               >
                 <div className="flex items-center gap-2.5">
+                  {/* Subtle active left bar indicator */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-4 bg-[#B89A62] rounded-r-sm" />
+                  )}
                   <Icon
                     className={cn(
-                      'w-3.5 h-3.5 transition-colors',
+                      'w-3.5 h-3.5 transition-colors duration-150',
                       isActive
                         ? 'text-[#D1B982]'
                         : 'text-[#817A70] group-hover:text-[#B7B0A3]'
                     )}
                   />
-                  <span>{item.label}</span>
+                  <span className={cn(isActive ? 'text-[#F2EDE3]' : 'text-[#B7B0A3]')}>
+                    {item.label}
+                  </span>
                 </div>
                 {item.badge && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#24221E] text-[#817A70] font-mono">
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#181714] text-[#817A70] font-mono">
                     {item.badge}
                   </span>
                 )}

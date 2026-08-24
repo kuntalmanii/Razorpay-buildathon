@@ -2,23 +2,13 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
-import { AuditLog, WebhookEventItem, RecoveryAction, RecoveryCase } from '@/types/api';
 import { formatDate } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  ScrollText,
-  ShieldCheck,
-  ShieldAlert,
-  Bot,
-  Activity,
-  Radio,
-  CheckCircle2,
-  AlertTriangle,
   Clock,
   ChevronDown,
   ChevronUp,
@@ -51,7 +41,6 @@ export function AuditTimeline() {
     setLoading(true);
     setError(null);
     try {
-      // Gather data across cases, webhooks, actions to construct chronological timeline
       const [casesRes, actionsRes, webhooksRes] = await Promise.all([
         apiClient.getRecoveryCases({ page: 1, limit: 10 }),
         apiClient.getRecoveryActions({ page: 1, limit: 15 }),
@@ -61,11 +50,11 @@ export function AuditTimeline() {
       const events: TimelineEvent[] = [];
 
       // 1. Webhook events (received & verified)
-      for (const w of webhooksRes.events) {
+      for (const w of webhooksRes.events || []) {
         events.push({
           id: `wh_${w.event_id}`,
           timestamp: w.received_at,
-          eventType: 'Webhook Received & Verified',
+          eventType: 'Webhook Ingress & Signature Check',
           status: w.signature_verified ? 'success' : 'failed',
           actor: 'razorpay_webhook_ingress',
           description: `Razorpay webhook event ${w.event_type} received with HMAC-SHA256 signature verification.`,
@@ -79,12 +68,11 @@ export function AuditTimeline() {
       }
 
       // 2. Risk case lifecycle events
-      for (const c of casesRes.cases) {
-        // Case created & risk calculated
+      for (const c of casesRes.cases || []) {
         events.push({
           id: `case_det_${c.case_id}`,
           timestamp: c.detected_at,
-          eventType: 'Case Created & Risk Calculated',
+          eventType: 'Case Created & Risk Evaluated',
           status: 'success',
           actor: 'revenue_risk_engine',
           description: `Detected payment failure (${c.failure_category}) for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Risk score: ${c.risk_score}/100.`,
@@ -97,50 +85,33 @@ export function AuditTimeline() {
           },
         });
 
-        // Case resolved event if resolved
-        if (c.resolved_at || c.status === 'recovered') {
+        if (c.status === 'recovered' && c.resolved_at) {
           events.push({
             id: `case_res_${c.case_id}`,
-            timestamp: c.resolved_at || c.detected_at,
-            eventType: 'Payment Verified & Case Resolved',
+            timestamp: c.resolved_at,
+            eventType: 'Payment Recovered & Settled',
             status: 'success',
-            actor: 'recovery_verifier',
-            description: `Payment confirmed captured by Razorpay. Case #${c.case_id.slice(0, 16)}... marked RECOVERED.`,
+            actor: 'payment_verifier',
+            description: `Payment successfully recovered for ₹${(Number(c.amount_at_risk) / 100).toLocaleString('en-IN')}. Case state marked RECOVERED.`,
             correlationId: c.case_id,
             details: {
-              recoveredAmountPaise: c.recovered_amount,
-              recoveryReason: c.recovery_reason || 'Verified via payment link completion',
+              caseId: c.case_id,
+              status: c.status,
+              resolvedAt: c.resolved_at,
             },
           });
         }
       }
 
-      // 3. Recovery actions (AI Decision + Policy Evaluation + Execution)
-      for (const a of actionsRes.actions) {
-        // AI & Policy Decision event
+      // 3. Recovery Actions executed & policy verified
+      for (const a of actionsRes.actions || []) {
         events.push({
-          id: `act_pol_${a.action_id}`,
-          timestamp: a.created_at,
-          eventType: a.policy_status === 'approved' ? 'Action Approved by Policy' : 'Action Blocked by Policy',
-          status: a.policy_status === 'approved' ? 'success' : 'blocked',
-          actor: a.proposed_by === 'ai' ? 'ai_recovery_agent + policy_engine' : 'policy_engine',
-          description: `AI recommended ${a.action_type}. Policy evaluated safety constraints with outcome: ${a.policy_status.toUpperCase()}.`,
-          correlationId: a.idempotency_key || a.action_id,
-          details: {
-            actionType: a.action_type,
-            policyStatus: a.policy_status,
-            payload: a.payload,
-          },
-        });
-
-        // Action Executed event
-        events.push({
-          id: `act_exec_${a.action_id}`,
+          id: `act_${a.action_id}`,
           timestamp: a.created_at,
           eventType: 'Recovery Action Executed',
           status: a.execution_status === 'completed' ? 'success' : a.execution_status === 'failed' ? 'failed' : 'pending',
           actor: 'recovery_executor',
-          description: `Dispatched action ${a.action_type} under 10-step safety protocol. Execution status: ${a.execution_status.toUpperCase()}.`,
+          description: `Dispatched action ${a.action_type.replace(/_/g, ' ')} under deterministic safety policy. Execution: ${a.execution_status.toUpperCase()}.`,
           correlationId: a.idempotency_key || a.action_id,
           details: {
             actionId: a.action_id,
@@ -181,30 +152,30 @@ export function AuditTimeline() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl">
       {/* Header & Controls Toolbar */}
-      <div className="p-4 rounded-xl bg-[#13161C] border border-[#232733] flex flex-wrap items-center justify-between gap-4">
+      <div className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#817A70]" />
           <input
             type="text"
             placeholder="Search audit timeline by event, actor, correlation ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#181C24] border border-[#282E3B] text-stone-200 text-xs rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-stone-400"
+            className="w-full bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md pl-8.5 pr-3 py-1.5 focus:outline-none focus:border-[#B89A62]/50 transition-colors placeholder:text-[#817A70] font-mono"
           />
         </div>
 
         {/* Status Filter & Refresh */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-stone-400" />
+            <Filter className="w-3.5 h-3.5 text-[#817A70]" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               aria-label="Filter audit timeline by status"
-              className="bg-[#181C24] border border-[#282E3B] text-stone-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500"
+              className="bg-[#181714] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#B89A62]/50 font-mono"
             >
               <option value="">All Event Statuses</option>
               <option value="success">Success / Verified</option>
@@ -214,7 +185,13 @@ export function AuditTimeline() {
             </select>
           </div>
 
-          <Button variant="ghost" size="sm" onClick={fetchAuditData} aria-label="Refresh timeline">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchAuditData}
+            aria-label="Refresh timeline"
+            className="h-7 w-7 p-0 text-[#817A70] hover:text-[#F2EDE3]"
+          >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
@@ -222,24 +199,24 @@ export function AuditTimeline() {
 
       {/* Main Timeline Feed */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div>
             <CardTitle>System & Lifecycle Audit Ledger</CardTitle>
             <CardDescription>
               Chronological immutable event trail from webhook arrival to verified revenue recovery
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2 text-xs text-stone-400">
-            <Lock className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex items-center gap-1.5 text-xs text-[#817A70] font-mono">
+            <Lock className="w-3.5 h-3.5 text-[#B89A62]" />
             <span>Cryptographic HMAC & DB Logs</span>
           </div>
         </CardHeader>
 
-        <CardContent className="p-6">
+        <CardContent className="p-5">
           {error ? (
             <ErrorState title="Could not load audit ledger" message={error} onRetry={fetchAuditData} />
           ) : loading ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <CardSkeleton />
               <CardSkeleton />
               <CardSkeleton />
@@ -251,69 +228,73 @@ export function AuditTimeline() {
               className="py-12"
             />
           ) : (
-            <div className="relative pl-6 border-l-2 border-[#1E232E] space-y-6">
-              {filteredEvents.map((evt) => {
+            <div className="relative pl-6 border-l border-[rgba(242,237,227,0.10)] space-y-4">
+              {filteredEvents.map((evt, idx) => {
                 const isExpanded = expandedId === evt.id;
 
-                const statusColor =
+                const nodeBg =
                   evt.status === 'success'
-                    ? 'bg-emerald-500 ring-emerald-500/20 text-emerald-400'
+                    ? 'bg-[#6F9B7A]'
                     : evt.status === 'blocked'
-                    ? 'bg-rose-500 ring-rose-500/20 text-rose-400'
+                    ? 'bg-[#B68B4F]'
                     : evt.status === 'failed'
-                    ? 'bg-rose-500 ring-rose-500/20 text-rose-400'
-                    : 'bg-amber-500 ring-amber-500/20 text-amber-400';
+                    ? 'bg-[#B56F68]'
+                    : 'bg-[#817A70]';
 
                 return (
-                  <div key={evt.id} className="relative group">
+                  <div
+                    key={evt.id}
+                    style={{ animationDelay: `${Math.min(idx * 25, 250)}ms` }}
+                    className="relative group motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-150"
+                  >
                     {/* Node Dot */}
                     <div
-                      className={`absolute -left-[31px] top-1.5 w-3 h-3 rounded-full ${statusColor} ring-4 transition-all`}
+                      className={`absolute -left-[28px] top-3 w-2 h-2 rounded-full ${nodeBg} ring-2 ring-[#151513]`}
                     />
 
                     {/* Event Card */}
-                    <div className="p-4 rounded-xl bg-[#141720] border border-[#232733] hover:border-[#2D3342] transition-colors space-y-2">
+                    <div className="p-3.5 rounded-lg bg-[#181714] border border-[rgba(242,237,227,0.08)] hover:border-[rgba(242,237,227,0.15)] transition-colors duration-150 space-y-2">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-semibold text-sm text-stone-100 font-mono">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-xs text-[#F2EDE3] font-mono">
                             {evt.eventType}
                           </span>
                           <span
-                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                            className={`inline-flex px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
                               evt.status === 'success'
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
                                 : evt.status === 'blocked'
-                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                ? 'bg-[#B68B4F]/10 text-[#B68B4F] border-[#B68B4F]/20'
                                 : evt.status === 'failed'
-                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                ? 'bg-[#B56F68]/10 text-[#B56F68] border-[#B56F68]/20'
+                                : 'bg-[#817A70]/10 text-[#817A70] border-[#817A70]/20'
                             }`}
                           >
                             {evt.status.toUpperCase()}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3 text-xs text-stone-400">
-                          <span className="flex items-center gap-1 font-mono text-[11px]">
-                            <Clock className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-2.5 text-xs text-[#817A70]">
+                          <span className="flex items-center gap-1 font-mono text-[10px]">
+                            <Clock className="w-3 h-3" />
                             {formatDate(evt.timestamp)}
                           </span>
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : evt.id)}
-                            className="text-stone-400 hover:text-stone-200 p-0.5 rounded"
+                            className="text-[#817A70] hover:text-[#F2EDE3] p-0.5 rounded transition-colors"
                             aria-label="Toggle technical details"
                           >
-                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           </button>
                         </div>
                       </div>
 
-                      <p className="text-xs text-stone-300 leading-relaxed">{evt.description}</p>
+                      <p className="text-xs text-[#B7B0A3] leading-relaxed">{evt.description}</p>
 
-                      <div className="flex flex-wrap items-center justify-between pt-1 text-[11px] text-stone-400 border-t border-[#1E232E]/60 gap-2">
-                        <span className="font-mono">Actor: {evt.actor}</span>
+                      <div className="flex flex-wrap items-center justify-between pt-1.5 text-[10px] text-[#817A70] border-t border-[rgba(242,237,227,0.06)] gap-2 font-mono">
+                        <span>Actor: {evt.actor}</span>
                         {evt.correlationId && (
-                          <span className="font-mono text-amber-400/90 truncate max-w-xs">
+                          <span className="text-[#D1B982] truncate max-w-xs">
                             Ref: {evt.correlationId}
                           </span>
                         )}
@@ -321,11 +302,11 @@ export function AuditTimeline() {
 
                       {/* Expandable Technical Details */}
                       {isExpanded && evt.details && (
-                        <div className="pt-3 border-t border-[#1E232E] space-y-2 animate-in fade-in duration-150">
-                          <span className="text-[11px] font-semibold text-stone-300 block">
-                            Sanitized Technical Metadata:
+                        <div className="pt-2.5 border-t border-[rgba(242,237,227,0.06)] space-y-1.5 animate-in fade-in duration-100">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#817A70] block">
+                            Sanitized Technical Payload:
                           </span>
-                          <pre className="p-3 bg-[#0F1117] border border-[#232733] rounded-lg overflow-x-auto text-[11px] font-mono text-amber-300/90">
+                          <pre className="p-2.5 bg-[#151513] border border-[rgba(242,237,227,0.08)] rounded text-[10px] font-mono text-[#D1B982] overflow-x-auto">
                             {JSON.stringify(evt.details, null, 2)}
                           </pre>
                         </div>

@@ -3,14 +3,16 @@ import { cn } from '@/lib/utils';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   glow?: boolean;
+  interactive?: boolean;
 }
 
-export function Card({ className, glow = false, children, ...props }: CardProps) {
+export function Card({ className, glow = false, interactive = false, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] transition-all',
+        'rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] transition-all duration-200 ease-out',
         glow && 'border-[#B89A62]/35 bg-[#1E1D19]',
+        interactive && 'hover:border-[rgba(242,237,227,0.18)] hover:bg-[#201F1B] cursor-pointer',
         className
       )}
       {...props}
