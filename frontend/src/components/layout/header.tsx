@@ -29,38 +29,38 @@ export function Header({ title, subtitle }: HeaderProps) {
   }, []);
 
   return (
-    <header className="h-16 border-b border-[#1E232E] bg-[#0F1117]/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-14 border-b border-[rgba(242,237,227,0.08)] bg-[#151513]/90 backdrop-blur-md px-6 sm:px-8 flex items-center justify-between sticky top-0 z-20">
       <div>
-        <h1 className="text-lg font-semibold text-stone-100 tracking-tight">{title}</h1>
-        {subtitle && <p className="text-xs text-stone-400">{subtitle}</p>}
+        <h1 className="text-sm sm:text-base font-semibold text-[#F2EDE3] tracking-tight">{title}</h1>
+        {subtitle && <p className="text-xs text-[#817A70] font-mono">{subtitle}</p>}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         {/* Backend Connectivity Status */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#13161C] border border-[#232733]">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#1C1B18] border border-[rgba(242,237,227,0.08)]">
           <Activity
-            className={`w-3.5 h-3.5 ${
+            className={`w-3 h-3 ${
               backendOnline === true
-                ? 'text-emerald-400'
+                ? 'text-[#6F9B7A]'
                 : backendOnline === false
-                ? 'text-rose-400'
-                : 'text-amber-400 animate-spin'
+                ? 'text-[#B56F68]'
+                : 'text-[#B89A62] animate-spin'
             }`}
           />
-          <span className="text-xs font-mono text-stone-300">
+          <span className="text-[11px] font-mono text-[#B7B0A3]">
             {backendOnline === true
-              ? 'Backend Online'
+              ? 'Backend Live'
               : backendOnline === false
-              ? 'Backend Unreachable'
+              ? 'Disconnected'
               : 'Connecting...'}
           </span>
         </div>
 
-        <Badge variant="gold" className="gap-1.5 py-1">
-          <Zap className="w-3 h-3 fill-amber-400" />
+        <Badge variant="gold" className="gap-1 py-0.5">
+          <Zap className="w-3 h-3 fill-[#B89A62]" />
           Razorpay Buildathon
         </Badge>
-        <Badge variant="emerald" className="gap-1.5 py-1">
+        <Badge variant="emerald" className="gap-1 py-0.5">
           <ShieldCheck className="w-3 h-3" />
           Deterministic Safety
         </Badge>

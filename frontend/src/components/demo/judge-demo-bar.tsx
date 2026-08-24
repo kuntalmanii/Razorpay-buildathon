@@ -78,44 +78,44 @@ export function JudgeDemoBar() {
       <div className="fixed bottom-5 right-6 z-40">
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all transform hover:scale-105 active:scale-95"
+          className="flex items-center gap-2.5 px-4 py-2 rounded-md bg-[#B89A62] hover:bg-[#D1B982] text-[#151513] font-semibold text-xs shadow-md transition-all transform hover:scale-[1.02] active:scale-[0.98] border border-[#D1B982]/30"
         >
-          <Play className="w-3.5 h-3.5 fill-stone-950" />
+          <Play className="w-3.5 h-3.5 fill-[#151513]" />
           <span>Launch Live Demo Scenarios</span>
-          <span className="text-[10px] bg-stone-950/20 px-1.5 py-0.5 rounded font-mono">4 Scenarios</span>
+          <span className="text-[10px] bg-[#151513]/15 px-1.5 py-0.2 rounded font-mono">4 Scenarios</span>
         </button>
       </div>
 
       {/* Demo Modal Drawer */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl rounded-2xl bg-[#0F1117] border border-[#232733] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-2xl rounded-lg bg-[#151513] border border-[rgba(242,237,227,0.12)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             {/* Modal Header */}
-            <div className="p-5 border-b border-[#1E232E] flex items-center justify-between bg-[#13161C]">
+            <div className="p-4 sm:p-5 border-b border-[rgba(242,237,227,0.08)] flex items-center justify-between bg-[#1C1B18]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                  <Play className="w-4 h-4 fill-amber-400" />
+                <div className="w-7 h-7 rounded-md bg-[#B89A62]/10 border border-[#B89A62]/25 flex items-center justify-center text-[#D1B982]">
+                  <Play className="w-3.5 h-3.5 fill-[#D1B982]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-stone-100 flex items-center gap-2">
-                    RecoverIQ Interactive Judge Demonstration
+                  <h3 className="text-sm sm:text-base font-semibold text-[#F2EDE3] tracking-tight">
+                    RecoverIQ Live Judge Demonstration
                   </h3>
-                  <p className="text-xs text-stone-400">
+                  <p className="text-xs text-[#817A70]">
                     Live verification of AI reasoning, deterministic policy safety, and fault recovery.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-stone-400 hover:text-stone-200 p-1.5 rounded-lg hover:bg-[#1E232E] transition-colors"
+                className="text-[#817A70] hover:text-[#F2EDE3] p-1.5 rounded-md hover:bg-[#24221E] transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
-              <div className="grid grid-cols-1 gap-3">
+            <div className="p-5 space-y-3.5 overflow-y-auto flex-1 custom-scrollbar">
+              <div className="grid grid-cols-1 gap-2.5">
                 {DEMO_SCENARIOS.map((scen) => {
                   const Icon = scen.icon;
                   const isRunning = runningScenario === scen.id;
@@ -123,20 +123,20 @@ export function JudgeDemoBar() {
                   return (
                     <div
                       key={scen.id}
-                      className="p-4 rounded-xl bg-[#141820] border border-[#232733] hover:border-amber-500/30 transition-all flex items-start justify-between gap-4 group"
+                      className="p-3.5 rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.08)] hover:border-[#B89A62]/30 transition-all flex items-start justify-between gap-3 group"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#1D222E] flex items-center justify-center text-stone-300 flex-shrink-0 mt-0.5 group-hover:text-amber-400 transition-colors">
-                          <Icon className="w-4 h-4" />
+                        <div className="w-7 h-7 rounded-md bg-[#24221E] flex items-center justify-center text-[#817A70] flex-shrink-0 mt-0.5 group-hover:text-[#D1B982] transition-colors">
+                          <Icon className="w-3.5 h-3.5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-bold text-stone-200">{scen.name}</span>
+                            <span className="text-xs font-semibold text-[#F2EDE3]">{scen.name}</span>
                             <Badge variant="gold" className="text-[10px] py-0 px-1.5">
                               {scen.badge}
                             </Badge>
                           </div>
-                          <p className="text-xs text-stone-400 leading-relaxed">{scen.description}</p>
+                          <p className="text-xs text-[#B7B0A3] leading-relaxed">{scen.description}</p>
                         </div>
                       </div>
 
@@ -145,9 +145,9 @@ export function JudgeDemoBar() {
                         variant="primary"
                         disabled={runningScenario !== null}
                         onClick={() => handleRunScenario(scen)}
-                        className="flex-shrink-0 gap-1.5 text-xs py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold"
+                        className="flex-shrink-0 gap-1 text-xs py-1 px-2.5 h-7"
                       >
-                        <Play className={`w-3 h-3 ${isRunning ? 'animate-spin' : 'fill-stone-950'}`} />
+                        <Play className={`w-3 h-3 ${isRunning ? 'animate-spin' : 'fill-[#151513]'}`} />
                         {isRunning ? 'Running...' : 'Execute'}
                       </Button>
                     </div>
@@ -157,53 +157,53 @@ export function JudgeDemoBar() {
 
               {/* Execution Error Banner */}
               {error && (
-                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                <div className="p-3.5 rounded-lg bg-[#B56F68]/10 border border-[#B56F68]/20 text-xs text-[#B56F68] flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-[#B56F68] flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               {/* Scenario Execution Result Visualizer */}
               {scenarioResult && (
-                <div className="mt-4 p-4 rounded-xl bg-[#11141B] border border-emerald-500/30 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#1E232E]">
-                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4" /> Scenario Execution Verified
+                <div className="mt-3 p-4 rounded-lg bg-[#1E1D19] border border-[#6F9B7A]/30 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                  <div className="flex items-center justify-between pb-2 border-b border-[rgba(242,237,227,0.08)]">
+                    <span className="text-xs font-semibold text-[#6F9B7A] flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5" /> Scenario Execution Verified
                     </span>
-                    <span className="text-[10px] font-mono text-stone-400">
-                      Outcome: <strong className="text-emerald-300">{scenarioResult.finalOutcome}</strong>
+                    <span className="text-[10px] font-mono text-[#817A70]">
+                      Outcome: <strong className="text-[#6F9B7A]">{scenarioResult.finalOutcome}</strong>
                     </span>
                   </div>
 
                   {/* Execution Timeline Steps */}
-                  <div className="space-y-2">
-                    <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#817A70]">
                       Execution Step Telemetry
                     </span>
                     {scenarioResult.steps.map((step) => (
                       <div
                         key={step.step}
-                        className="p-2.5 rounded-lg bg-[#0F1117] border border-[#1E232E] text-xs flex items-start gap-2.5"
+                        className="p-2.5 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] text-xs flex items-start gap-2.5"
                       >
-                        <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="w-4 h-4 rounded bg-[#6F9B7A]/10 border border-[#6F9B7A]/20 text-[#6F9B7A] font-mono text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
                           {step.step}
                         </span>
                         <div className="space-y-0.5 flex-1">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-stone-200">{step.name}</span>
+                            <span className="font-medium text-[#F2EDE3]">{step.name}</span>
                             <span
-                              className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                              className={`text-[10px] font-mono font-medium px-1.5 py-0.2 rounded ${
                                 step.status === 'PASSED' || step.status === 'RECOVERED'
-                                  ? 'bg-emerald-500/10 text-emerald-400'
+                                  ? 'bg-[#6F9B7A]/10 text-[#6F9B7A]'
                                   : step.status === 'BLOCKED_BY_SAFETY'
-                                  ? 'bg-amber-500/10 text-amber-400'
-                                  : 'bg-rose-500/10 text-rose-400'
+                                  ? 'bg-[#B68B4F]/10 text-[#B68B4F]'
+                                  : 'bg-[#B56F68]/10 text-[#B56F68]'
                               }`}
                             >
                               {step.status}
                             </span>
                           </div>
-                          <p className="text-[11px] text-stone-400 font-mono">{step.details}</p>
+                          <p className="text-[11px] text-[#817A70] font-mono">{step.details}</p>
                         </div>
                       </div>
                     ))}
@@ -211,14 +211,14 @@ export function JudgeDemoBar() {
 
                   {/* Safety Guarantees Verified */}
                   {scenarioResult.safetyGuaranteesEnforced && (
-                    <div className="pt-2 border-t border-[#1E232E] space-y-1">
-                      <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
+                    <div className="pt-2 border-t border-[rgba(242,237,227,0.08)] space-y-1">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#817A70]">
                         Safety Guarantees Enforced:
                       </span>
-                      <ul className="text-[11px] text-stone-300 space-y-0.5">
+                      <ul className="text-[11px] text-[#B7B0A3] space-y-0.5 font-mono">
                         {scenarioResult.safetyGuaranteesEnforced.map((g, idx) => (
                           <li key={idx} className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                            <CheckCircle2 className="w-3 h-3 text-[#6F9B7A] flex-shrink-0" />
                             <span>{g}</span>
                           </li>
                         ))}
@@ -230,11 +230,11 @@ export function JudgeDemoBar() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-[#1E232E] bg-[#13161C] flex items-center justify-between text-xs text-stone-400">
-              <span className="flex items-center gap-1.5">
-                <Bot className="w-3.5 h-3.5 text-amber-400" /> Powered by RecoverIQ Autonomous Safety Architecture
+            <div className="p-3.5 border-t border-[rgba(242,237,227,0.08)] bg-[#1C1B18] flex items-center justify-between text-xs text-[#817A70]">
+              <span className="flex items-center gap-1.5 font-mono text-[11px]">
+                <Bot className="w-3.5 h-3.5 text-[#B89A62]" /> RecoverIQ Deterministic Architecture
               </span>
-              <Button size="sm" variant="ghost" onClick={() => setIsOpen(false)} className="text-xs">
+              <Button size="sm" variant="ghost" onClick={() => setIsOpen(false)} className="text-xs h-7">
                 Close Demo
               </Button>
             </div>
