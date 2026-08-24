@@ -9,8 +9,8 @@ export function Card({ className, glow = false, children, ...props }: CardProps)
   return (
     <div
       className={cn(
-        'rounded-xl bg-[#13161C] border border-[#232733] shadow-card text-[#F3F4F6] transition-all',
-        glow && 'border-amber-500/30 shadow-[0_0_25px_-5px_rgba(245,158,11,0.15)]',
+        'rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] text-[#F2EDE3] transition-all',
+        glow && 'border-[#B89A62]/35 bg-[#1E1D19]',
         className
       )}
       {...props}
@@ -22,7 +22,7 @@ export function Card({ className, glow = false, children, ...props }: CardProps)
 
 export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('p-5 border-b border-[#1E232E]', className)} {...props}>
+    <div className={cn('p-4 sm:p-5 border-b border-[rgba(242,237,227,0.08)]', className)} {...props}>
       {children}
     </div>
   );
@@ -30,7 +30,7 @@ export function CardHeader({ className, children, ...props }: React.HTMLAttribut
 
 export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('font-semibold text-base text-stone-100 tracking-tight', className)} {...props}>
+    <h3 className={cn('font-medium text-sm sm:text-base text-[#F2EDE3] tracking-tight', className)} {...props}>
       {children}
     </h3>
   );
@@ -38,7 +38,7 @@ export function CardTitle({ className, children, ...props }: React.HTMLAttribute
 
 export function CardDescription({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn('text-xs text-stone-400 mt-1', className)} {...props}>
+    <p className={cn('text-xs text-[#B7B0A3] mt-0.5 leading-relaxed', className)} {...props}>
       {children}
     </p>
   );
@@ -46,7 +46,7 @@ export function CardDescription({ className, children, ...props }: React.HTMLAtt
 
 export function CardContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('p-5', className)} {...props}>
+    <div className={cn('p-4 sm:p-5', className)} {...props}>
       {children}
     </div>
   );

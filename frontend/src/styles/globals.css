@@ -4,50 +4,51 @@
 
 @layer base {
   :root {
-    --background: 13 15 18;
-    --foreground: 243 244 246;
+    --background: 21 21 19;
+    --foreground: 242 237 227;
   }
 
   body {
-    background-color: #0D0F12;
-    color: #F3F4F6;
+    background-color: #151513;
+    color: #F2EDE3;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Selection styling */
+  ::selection {
+    background-color: rgba(184, 154, 98, 0.25);
+    color: #F2EDE3;
+  }
 }
 
-/* Custom subtle scrollbar */
+/* Custom subtle editorial scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #13161C;
+  background: #181714;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #282E3B;
+  background: #24221E;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3B4457;
+  background: #33302B;
 }
 
-/* Glassmorphism panel utility */
-.glass-panel {
-  background: rgba(19, 22, 28, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(40, 46, 59, 0.8);
+/* Operational panel utility */
+.terminal-panel {
+  background: #1C1B18;
+  border: 1px solid rgba(242, 237, 227, 0.10);
 }
 
-/* Subtle glow effects */
-.gold-glow {
-  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.25);
-}
-
-.blue-glow {
-  box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.25);
+/* Quiet brass accent focus ring */
+.focus-brass:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1.5px #B89A62;
 }

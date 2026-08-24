@@ -11,7 +11,7 @@ export interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Failed to Load Data',
+  title = 'Unable to Load Data',
   message,
   onRetry,
   className,
@@ -19,23 +19,23 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center p-8 text-center rounded-xl bg-rose-500/5 border border-rose-500/20',
+        'flex flex-col items-center justify-center p-8 text-center rounded-lg bg-[#B56F68]/5 border border-[#B56F68]/20',
         className
       )}
     >
-      <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 mb-3 border border-rose-500/20">
-        <AlertCircle className="w-5 h-5" />
+      <div className="w-9 h-9 rounded-full bg-[#B56F68]/10 flex items-center justify-center text-[#B56F68] mb-3 border border-[#B56F68]/20">
+        <AlertCircle className="w-4 h-4" />
       </div>
-      <h4 className="text-sm font-semibold text-rose-300">{title}</h4>
-      <p className="text-xs text-rose-200/80 mt-1 max-w-sm">{message}</p>
+      <h4 className="text-xs sm:text-sm font-semibold text-[#F2EDE3]">{title}</h4>
+      <p className="text-xs text-[#B7B0A3] mt-1 max-w-sm leading-relaxed">{message}</p>
       {onRetry && (
         <Button
           variant="outline"
           size="sm"
-          className="mt-4 border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
+          className="mt-4 border-[#B56F68]/30 text-[#F2EDE3] hover:bg-[#B56F68]/10"
           onClick={onRetry}
         >
-          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+          <RefreshCw className="w-3 h-3 mr-1.5" />
           Retry Request
         </Button>
       )}

@@ -16,27 +16,27 @@ export function Button({
 }: ButtonProps) {
   const variantStyles = {
     primary:
-      'bg-amber-500 hover:bg-amber-400 text-stone-950 font-medium shadow-sm hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]',
+      'bg-[#B89A62] hover:bg-[#D1B982] text-[#151513] font-medium transition-colors shadow-none',
     secondary:
-      'bg-[#1F242E] hover:bg-[#282E3B] text-stone-200 border border-[#2B3240]',
+      'bg-[#24221E] hover:bg-[#2C2A25] text-[#F2EDE3] border border-[rgba(242,237,227,0.10)]',
     outline:
-      'border border-[#282E3B] hover:border-amber-500/40 hover:bg-amber-500/5 text-stone-300',
+      'border border-[rgba(242,237,227,0.12)] hover:border-[#B89A62]/40 hover:bg-[#B89A62]/5 text-[#F2EDE3]',
     ghost:
-      'hover:bg-[#1A1E26] text-stone-400 hover:text-stone-200',
+      'hover:bg-[#24221E] text-[#B7B0A3] hover:text-[#F2EDE3]',
     danger:
-      'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20',
+      'bg-[#B56F68]/10 hover:bg-[#B56F68]/20 text-[#B56F68] border border-[#B56F68]/20',
   };
 
   const sizeStyles = {
-    sm: 'text-xs px-2.5 py-1.5 rounded-lg gap-1.5',
-    md: 'text-sm px-4 py-2 rounded-lg gap-2',
-    lg: 'text-base px-5 py-2.5 rounded-xl gap-2.5',
+    sm: 'text-xs px-2.5 py-1.5 rounded-md gap-1.5',
+    md: 'text-xs sm:text-sm px-3.5 py-2 rounded-md gap-2',
+    lg: 'text-sm px-4.5 py-2.5 rounded-lg gap-2.5',
   };
 
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]',
+        'inline-flex items-center justify-center transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none active:scale-[0.99] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#B89A62]',
         variantStyles[variant],
         sizeStyles[size],
         className
