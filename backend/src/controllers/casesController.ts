@@ -94,6 +94,11 @@ export class CasesController {
     if (!body.failure_category) {
       throw new ValidationError('failure_category is required');
     }
+    let failureCategory = body.failure_category.toLowerCase().trim();
+    if (failureCategory === 'network_failure') failureCategory = 'network_error';
+    if (failureCategory === 'subscription_halted') failureCategory = 'subscription_halt';
+    if (failureCategory === 'customer_abandoned') failureCategory = 'authentication_failure';
+
     if (!amountAtRisk || amountAtRisk <= 0) {
       throw new ValidationError('amount_at_risk must be a positive number (in paise)');
     }
@@ -106,7 +111,7 @@ export class CasesController {
       subscription_id: body.subscription_id,
       amount_at_risk: amountAtRisk,
       currency: body.currency || 'INR',
-      failure_category: body.failure_category,
+      failure_category: failureCategory,
       risk_score: riskScore,
       recovery_probability: body.recovery_probability ? Number(body.recovery_probability) : 0.5,
       recovery_reason: body.recovery_reason,

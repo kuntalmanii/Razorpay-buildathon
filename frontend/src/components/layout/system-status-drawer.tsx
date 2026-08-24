@@ -58,7 +58,7 @@ export function SystemStatusDrawer() {
             <Zap className="w-2.5 h-2.5 text-[#B89A62]" /> Gateway
           </span>
           <span className="font-mono text-[#D1B982] text-[10px] bg-[#B89A62]/10 px-1 py-0.5 rounded border border-[#B89A62]/20">
-            {health?.razorpay.isTestMode
+            {health?.razorpay?.isTestMode
               ? health.razorpay.maskedKeyId || 'rzp_test_active'
               : 'Test Mode'}
           </span>
@@ -81,10 +81,10 @@ export function SystemStatusDrawer() {
           </span>
           <span
             className={`font-mono text-[10px] font-medium ${
-              health?.database.status === 'ok' ? 'text-[#6F9B7A]' : 'text-[#B68B4F]'
+              health?.database?.status === 'ok' ? 'text-[#6F9B7A]' : 'text-[#B68B4F]'
             }`}
           >
-            {health?.database.status === 'ok' ? 'Connected' : 'Degraded'}
+            {health?.database?.status === 'ok' ? 'Connected' : 'Degraded'}
           </span>
         </div>
 

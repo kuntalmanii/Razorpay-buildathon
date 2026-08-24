@@ -37,7 +37,12 @@ export function parseCasesFilter(
   }
 
   if (query.failure_category !== undefined) {
-    const fc = query.failure_category as string;
+    let fc = (query.failure_category as string).toLowerCase().trim();
+    // Normalize aliases
+    if (fc === 'network_failure') fc = 'network_error';
+    if (fc === 'subscription_halted') fc = 'subscription_halt';
+    if (fc === 'customer_abandoned') fc = 'authentication_failure';
+
     if (!VALID_CATEGORIES.includes(fc as FailureCategory)) {
       errors.failure_category = `Must be one of: ${VALID_CATEGORIES.join(', ')}`;
     } else {

@@ -39,12 +39,26 @@ export function CaseDecisionDeepDive({ caseId }: CaseDecisionDeepDiveProps) {
     try {
       const [c, actsRes, audit] = await Promise.all([
         apiClient.getRecoveryCase(caseId),
-        apiClient.getRecoveryActions({ page: 1, limit: 10 }).catch(() => ({ actions: [], meta: { page: 1, limit: 10, total: 0, totalPages: 0 } })),
-        apiClient.getCaseAudit(caseId).catch(() => [] as AuditLog[]),
+        apiClient
+          .getRecoveryActions(caseId)
+          .catch(() =>
+            Object.assign([] as RecoveryAction[], {
+              actions: [] as RecoveryAction[],
+              meta: { page: 1, limit: 10, total: 0, totalPages: 0 },
+            })
+          ),
+        apiClient
+          .getCaseAudit(caseId)
+          .catch(() =>
+            Object.assign([] as AuditLog[], {
+              logs: [] as AuditLog[],
+              meta: { page: 1, limit: 10, total: 0, totalPages: 0 },
+            })
+          ),
       ]);
       setCaseData(c);
-      setActions(actsRes.actions.filter((a) => a.case_id === caseId));
-      setAuditLogs(audit);
+      setActions(actsRes.actions || actsRes || []);
+      setAuditLogs(audit.logs || audit || []);
     } catch (err) {
       setError((err as Error).message);
     } finally {

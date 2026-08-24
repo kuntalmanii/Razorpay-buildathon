@@ -29,7 +29,7 @@ export function apiAuthMiddleware(req: Request, res: Response, next: NextFunctio
   }
 
   // Exempt health endpoints
-  if (req.path === '/health' || req.path === '/api/health') {
+  if (req.path === '/health' || req.path.startsWith('/health/') || req.path === '/api/health' || req.path.startsWith('/api/health/')) {
     return next();
   }
 

@@ -119,14 +119,19 @@ export interface WebhookEventItem {
 }
 
 export interface MetricsSummary {
-  periodDays: number;
-  revenueAtRiskPaise: number;
-  revenueRecoveredPaise: number;
-  recoveryRatePercent: number;
-  totalCasesCount: number;
-  recoveredCasesCount: number;
-  averageRiskScore: number;
+  periodDays?: number;
+  period_days?: number;
+  revenueAtRiskPaise?: number;
+  revenueRecoveredPaise?: number;
+  recoveryRatePercent?: number;
+  totalCasesCount?: number;
+  recoveredCasesCount?: number;
+  averageRiskScore?: number;
   failedCount?: number;
+  cases_by_failure_category?: Record<string, number>;
+  actions_by_type?: Record<string, number>;
+  actions_by_execution_status?: Record<string, number>;
+  webhooks_by_status?: Record<string, number>;
   dailyBreakdown?: Array<{
     date: string;
     riskPaise: number;
@@ -137,8 +142,9 @@ export interface MetricsSummary {
 export interface EvaluationReport {
   runId?: string;
   durationMs?: number;
+  startedAt?: string;
   completedAt?: string;
-  evaluatedAt: string;
+  evaluatedAt?: string;
   datasetSize: number;
   casesProcessed: number;
 

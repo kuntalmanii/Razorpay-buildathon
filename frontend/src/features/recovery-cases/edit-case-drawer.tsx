@@ -56,7 +56,7 @@ export function EditCaseDrawer({ caseData, onClose, onUpdated }: EditCaseDrawerP
     });
     setSuccess(false);
     setError(null);
-  }, [caseData.case_id]);
+  }, [caseData]);
 
   const set = (field: keyof typeof form, value: string | number) =>
     setForm((f) => ({ ...f, [field]: value }));

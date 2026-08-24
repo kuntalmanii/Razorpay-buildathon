@@ -202,10 +202,11 @@ export function RecoveryCasesList() {
             <option value="">All Failure Categories</option>
             <option value="insufficient_funds">Insufficient Funds</option>
             <option value="bank_decline">Bank Decline</option>
-            <option value="network_failure">Network Failure</option>
+            <option value="network_error">Network Failure</option>
             <option value="card_expired">Card Expired</option>
-            <option value="subscription_halted">Subscription Halted</option>
-            <option value="customer_abandoned">Customer Abandoned</option>
+            <option value="subscription_halt">Subscription Halted</option>
+            <option value="authentication_failure">Customer Abandoned / Auth Failure</option>
+            <option value="payment_failure">Payment Failure</option>
           </select>
 
           <Button

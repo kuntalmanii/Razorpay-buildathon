@@ -9,10 +9,11 @@ import { X, ShieldAlert, AlertTriangle } from 'lucide-react';
 const FAILURE_CATEGORIES = [
   { value: 'insufficient_funds', label: 'Insufficient Funds' },
   { value: 'bank_decline', label: 'Bank Decline' },
-  { value: 'network_failure', label: 'Network Failure' },
+  { value: 'network_error', label: 'Network Failure' },
   { value: 'card_expired', label: 'Card Expired' },
-  { value: 'subscription_halted', label: 'Subscription Halted' },
-  { value: 'customer_abandoned', label: 'Customer Abandoned' },
+  { value: 'subscription_halt', label: 'Subscription Halted' },
+  { value: 'authentication_failure', label: 'Customer Abandoned / Auth Failure' },
+  { value: 'payment_failure', label: 'Generic Payment Failure' },
 ];
 
 interface AddCaseModalProps {

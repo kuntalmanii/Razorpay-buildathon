@@ -112,8 +112,9 @@ export function CommandCenter() {
 
   // Transform daily metrics breakdown for trend chart (with graceful fallback curve)
   const trendData = useMemo(() => {
-    if (metrics?.dailyBreakdown && metrics.dailyBreakdown.length > 0) {
-      return metrics.dailyBreakdown.map((d) => ({
+    const daily = metrics?.dailyBreakdown;
+    if (daily && daily.length > 0) {
+      return daily.map((d) => ({
         date: d.date.slice(5), // MM-DD format
         Recovered: d.recoveredPaise / 100,
         AtRisk: d.riskPaise / 100,
@@ -130,7 +131,7 @@ export function CommandCenter() {
         AtRisk: Math.round(totalRiskINR * (0.5 + factor * 0.5)),
       };
     });
-  }, [metrics?.dailyBreakdown, summary?.totalRevenueAtRiskPaise, summary?.totalRecoveredPaise]);
+  }, [metrics, summary]);
 
   const CATEGORY_COLORS = ['#B89A62', '#6F9B7A', '#71879A', '#B68B4F', '#B56F68', '#817A70'];
 

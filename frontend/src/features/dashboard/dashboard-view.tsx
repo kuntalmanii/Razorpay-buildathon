@@ -277,7 +277,7 @@ export function DashboardView() {
                         <tr key={c.case_id} className="hover:bg-[#181C24]/50 transition-colors">
                           <td className="py-3 px-4 font-mono font-medium text-stone-200">
                             <Link
-                              href={`/recovery-cases?id=${c.case_id}`}
+                              href={`/recovery-cases/${c.case_id}`}
                               className="text-amber-400 hover:underline"
                             >
                               {c.case_id.slice(0, 16)}...

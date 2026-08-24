@@ -21,14 +21,8 @@ export function AuditView() {
     setLoading(true);
     setError(null);
     try {
-      // In RecoverIQ, case-specific or general audit logs can be fetched
-      const res = await apiClient.getRecoveryCases({ page: 1, limit: 1 });
-      if (res.cases.length > 0) {
-        const audit = await apiClient.getCaseAudit(res.cases[0].case_id);
-        setLogs(audit);
-      } else {
-        setLogs([]);
-      }
+      const res = await apiClient.getAuditLogs({ page: 1, limit: 50 });
+      setLogs(res.logs || res || []);
     } catch (err) {
       setError((err as Error).message);
     } finally {
