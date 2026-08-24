@@ -125,6 +125,7 @@ export function AiDecisionsView() {
                     <th className="py-2.5 px-4 font-medium">Policy Status</th>
                     <th className="py-2.5 px-4 font-medium">Execution</th>
                     <th className="py-2.5 px-4 font-medium">Timestamp</th>
+                    <th className="py-2.5 px-4 font-medium text-right">Details</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(242,237,227,0.06)]">
@@ -181,6 +182,14 @@ export function AiDecisionsView() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-[#817A70] font-mono text-[11px]">{formatDate(act.created_at)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <a
+                            href={`/recovery-cases/${act.case_id}/decision`}
+                            className="inline-flex items-center text-xs font-mono text-[#D1B982] hover:text-[#F2EDE3] hover:underline"
+                          >
+                            Deep Dive &rarr;
+                          </a>
+                        </td>
                       </tr>
                     );
                   })}

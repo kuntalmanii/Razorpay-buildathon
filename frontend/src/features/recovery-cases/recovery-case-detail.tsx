@@ -365,11 +365,18 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
               </p>
             </div>
 
-            <div className="p-2 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] text-[10px] text-[#817A70] flex items-start gap-2 font-mono">
-              <Lock className="w-3 h-3 text-[#B89A62] shrink-0 mt-0.5" />
-              <span>
-                <strong>Safety Guarantee:</strong> AI recommendations have zero direct API execution rights. Razorpay credentials are never exposed to LLMs.
-              </span>
+            <div className="flex items-center justify-between pt-1">
+              <div className="p-2 rounded bg-[#181714] border border-[rgba(242,237,227,0.06)] text-[10px] text-[#817A70] flex items-start gap-2 font-mono flex-1 mr-2">
+                <Lock className="w-3 h-3 text-[#B89A62] shrink-0 mt-0.5" />
+                <span>
+                  <strong>Safety Guarantee:</strong> AI recommendations have zero direct API execution rights. Razorpay credentials are never exposed to LLMs.
+                </span>
+              </div>
+              <Link href={`/recovery-cases/${caseData.case_id}/decision`}>
+                <Button variant="outline" size="sm" className="h-8 text-xs font-mono text-[#D1B982] border-[#B89A62]/30 hover:border-[#B89A62]">
+                  Deep Dive &rarr;
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
