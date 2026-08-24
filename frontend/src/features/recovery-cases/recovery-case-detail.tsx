@@ -510,6 +510,8 @@ export function RecoveryCaseDetail({ caseId }: CaseDetailProps) {
                           className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${
                             act.execution_status === 'completed'
                               ? 'bg-[#6F9B7A]/10 text-[#6F9B7A] border-[#6F9B7A]/20'
+                              : act.execution_status === 'failed'
+                              ? 'bg-[#B56F68]/10 text-[#B56F68] border-[#B56F68]/20'
                               : 'bg-[#B68B4F]/10 text-[#B68B4F] border-[#B68B4F]/20'
                           }`}
                         >
