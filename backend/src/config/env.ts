@@ -6,6 +6,8 @@
  * so problems surface at boot time rather than at request time.
  */
 
+import 'dotenv/config';
+
 function requireEnv(key: string): string {
   const value = process.env[key];
   if (!value || value.trim() === '') {
@@ -35,6 +37,7 @@ export interface AppConfig {
     readonly nodeEnv: string;
     readonly isProduction: boolean;
     readonly isDevelopment: boolean;
+    readonly isTest: boolean;
   };
   readonly cors: {
     readonly origin: string;
@@ -53,9 +56,12 @@ export interface AppConfig {
 
 function buildConfig(): AppConfig {
   const nodeEnv = optionalEnv('NODE_ENV', 'development');
+  const isTest = nodeEnv === 'test';
 
-  // DATABASE_URL is required — fail fast without it
-  const databaseUrl = requireEnv('DATABASE_URL');
+  // In test mode, fallback to a local test DB URL if not set
+  const databaseUrl = isTest
+    ? optionalEnv('DATABASE_URL', 'postgresql://localhost:5432/recoveriq_test')
+    : requireEnv('DATABASE_URL');
 
   return Object.freeze({
     server: {
@@ -63,6 +69,7 @@ function buildConfig(): AppConfig {
       nodeEnv,
       isProduction: nodeEnv === 'production',
       isDevelopment: nodeEnv === 'development',
+      isTest,
     },
     cors: {
       origin: optionalEnv('CORS_ORIGIN', 'http://localhost:3000'),
@@ -75,7 +82,7 @@ function buildConfig(): AppConfig {
       idleTimeoutMs: optionalInt('DB_IDLE_TIMEOUT_MS', 30000),
     },
     log: {
-      level: optionalEnv('LOG_LEVEL', nodeEnv === 'production' ? 'info' : 'debug'),
+      level: optionalEnv('LOG_LEVEL', isTest ? 'error' : (nodeEnv === 'production' ? 'info' : 'debug')),
     },
   });
 }

@@ -36,6 +36,13 @@ export function getPool(): Pool {
   return pool;
 }
 
+/**
+ * Allows overriding or resetting the pool instance (useful for unit tests).
+ */
+export function setPool(customPool: Pool | null): void {
+  pool = customPool;
+}
+
 // ─── Health Check ─────────────────────────────────────────────────────────────
 export interface DatabaseHealth {
   status: 'ok' | 'error';

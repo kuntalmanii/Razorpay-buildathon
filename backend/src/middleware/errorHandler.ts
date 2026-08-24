@@ -2,25 +2,24 @@
  * middleware/errorHandler.ts — Global Express error handler.
  *
  * Must be mounted LAST — after all routes and other middleware.
- * Express identifies error-handling middleware by its 4-argument signature.
+ * Formats all errors into the standard API error response envelope:
+ * {
+ *   "success": false,
+ *   "error": {
+ *     "code": "...",
+ *     "message": "...",
+ *     "requestId": "...",
+ *     "fields": {} // optional
+ *   }
+ * }
  *
- * - AppError instances (operational errors) → return appropriate HTTP status + JSON
- * - Unknown errors → log stack trace + return 500 (details hidden in production)
+ * Internal error details (DB credentials, stack traces, internal paths) are never exposed.
  */
 
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
 import { logger } from '../utils/logger';
-import { config } from '../config';
-
-interface ErrorResponse {
-  error: {
-    message: string;
-    code?: string;
-    fields?: Record<string, string>;
-    stack?: string;
-  };
-}
+import { ApiErrorResponse } from '../types/api';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function errorHandler(
@@ -29,42 +28,43 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  // Operational errors — known, expected errors we threw intentionally
+  const requestId = req.requestId || 'unknown';
+
+  // Operational errors — known, expected errors with status codes
   if (err instanceof AppError) {
-    const body: ErrorResponse = {
+    const fields = 'fields' in err ? (err as AppError & { fields?: Record<string, string> }).fields : undefined;
+
+    const response: ApiErrorResponse = {
+      success: false,
       error: {
-        message: err.message,
         code: err.name,
-        // Include field-level validation errors if present
-        ...('fields' in err && { fields: (err as AppError & { fields?: Record<string, string> }).fields }),
+        message: err.message,
+        requestId,
+        ...(fields ? { fields } : {}),
       },
     };
 
-    if (!config.server.isProduction) {
-      body.error.stack = err.stack;
-    }
-
-    res.status(err.statusCode).json(body);
+    res.status(err.statusCode).json(response);
     return;
   }
 
-  // Unexpected errors — log full details, return generic 500
-  logger.error('Unhandled error', {
+  // Unexpected errors — log full details server-side, return safe 500
+  logger.error('Unhandled server error', {
+    requestId,
     message: err.message,
     stack: err.stack,
     url: req.originalUrl,
     method: req.method,
   });
 
-  const body: ErrorResponse = {
+  const response: ApiErrorResponse = {
+    success: false,
     error: {
-      message: config.server.isProduction
-        ? 'An unexpected error occurred'
-        : err.message,
-      code: 'InternalServerError',
-      ...(!config.server.isProduction && { stack: err.stack }),
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected internal server error occurred',
+      requestId,
     },
   };
 
-  res.status(500).json(body);
+  res.status(500).json(response);
 }

@@ -8,14 +8,17 @@ dotenv.config();
 import { config } from './config';
 import { logger } from './utils/logger';
 import { testConnection, closePool } from './database/connection';
+import { requestId } from './middleware/requestId';
 import { requestLogger } from './middleware/requestLogger';
 import { notFound } from './middleware/notFound';
 import { errorHandler } from './middleware/errorHandler';
 import { healthRouter } from './routes/health';
+import { apiRouter } from './routes/api';
 
 const app: Application = express();
 
 // ─── Core Middleware ──────────────────────────────────────────────────────────
+app.use(requestId);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -28,6 +31,7 @@ app.use(requestLogger);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/health', healthRouter);
+app.use('/api', apiRouter);
 
 // ─── 404 + Global Error Handler ───────────────────────────────────────────────
 // notFound must come after all routes; errorHandler must be last
@@ -66,9 +70,11 @@ async function shutdown(signal: string): Promise<void> {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
-start().catch((err) => {
-  logger.error('Failed to start server', { message: err.message });
-  process.exit(1);
-});
+if (process.env.NODE_ENV !== 'test') {
+  start().catch((err) => {
+    logger.error('Failed to start server', { message: err.message });
+    process.exit(1);
+  });
+}
 
 export default app;

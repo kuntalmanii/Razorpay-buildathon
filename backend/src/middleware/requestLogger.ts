@@ -1,9 +1,8 @@
 /**
  * middleware/requestLogger.ts — HTTP request/response logger.
  *
- * Logs every incoming request with method, URL, status code, and duration.
- * Uses the logger utility so output format (JSON vs pretty) matches the
- * server's NODE_ENV.
+ * Logs every incoming request with method, URL, status code, duration, and requestId.
+ * Uses the logger utility so output format (JSON vs pretty) matches NODE_ENV.
  */
 
 import { Request, Response, NextFunction } from 'express';
@@ -18,6 +17,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
     const elapsedMs = Number(elapsedNs) / 1_000_000;
 
     const meta = {
+      requestId: req.requestId,
       method,
       url: originalUrl,
       status: res.statusCode,
