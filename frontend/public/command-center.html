@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>RecoverIQ Command Center</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-low": "#f2ede5",
+            "primary-container": "#ffcc00",
+            "inverse-surface": "#1a1a1a",
+            "primary-fixed": "#ffcc00",
+            "on-secondary-container": "#1a1a1a",
+            error: "#cc0000",
+            "secondary-container": "#ffdad6",
+            "on-primary": "#ffffff",
+            "surface-dim": "#d6d1c9",
+            "surface-container": "#eee9e0",
+            "on-background": "#1a1a1a",
+            "surface-bright": "#faf7f2",
+            "surface-variant": "#e8e3da",
+            "inverse-primary": "#f5f0e8",
+            "secondary-fixed-dim": "#ffb3ab",
+            "on-tertiary-container": "#1a1a1a",
+            tertiary: "#0055ff",
+            "on-secondary-fixed": "#1a1a1a",
+            "on-primary-fixed-variant": "#1a1a1a",
+            "on-error": "#ffffff",
+            "surface-container-highest": "#e2ddd4",
+            "on-secondary": "#1a1a1a",
+            "on-surface": "#1a1a1a",
+            "on-surface-variant": "#4a4a4a",
+            "on-primary-container": "#1a1a1a",
+            "surface-tint": "#1a1a1a",
+            surface: "#f5f0e8",
+            "primary-fixed-dim": "#e6b800",
+            "on-error-container": "#93000a",
+            "tertiary-fixed-dim": "#a8c6ff",
+            "tertiary-fixed": "#d6e3ff",
+            "on-tertiary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            background: "#f5f0e8",
+            "secondary-fixed": "#ffdad6",
+            "tertiary-container": "#d6e3ff",
+            primary: "#1a1a1a",
+            secondary: "#e63b2e",
+            "inverse-on-surface": "#f5f0e8",
+            "on-tertiary-fixed": "#1a1a1a",
+            "on-primary-fixed": "#1a1a1a",
+            "surface-container-high": "#e8e3da",
+            "outline-variant": "#d0cbc3",
+            "error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#1a1a1a",
+            "on-tertiary-fixed-variant": "#1a1a1a",
+            outline: "#1a1a1a"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          spacing: {
+            sm: "8px",
+            unit: "4px",
+            xl: "32px",
+            "container-max": "1440px",
+            xs: "4px",
+            gutter: "16px",
+            md: "16px",
+            lg: "24px"
+          },
+          fontFamily: {
+            "display-lg": ["Space Grotesk", "sans-serif"],
+            "data-point": ["Space Grotesk", "sans-serif"],
+            "headline-md": ["Space Grotesk", "sans-serif"],
+            "body-lg": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "headline-lg": ["Space Grotesk", "sans-serif"],
+            "headline-lg-mobile": ["Space Grotesk", "sans-serif"],
+            "label-mono": ["JetBrains Mono", "monospace"],
+            headline: ["Space Grotesk", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Space Grotesk", "sans-serif"]
+          },
+          fontSize: {
+            "display-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "data-point": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+            "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "headline-lg": ["28px", { lineHeight: "36px", fontWeight: "600" }],
+            "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+            "label-mono": ["12px", { lineHeight: "16px", fontWeight: "500" }]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f6f3f2; 
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c3c6d8; 
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #737687; 
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex overflow-hidden">
+  <!-- SideNavBar -->
+  <nav class="bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 h-full w-[260px] flex flex-col py-gutter z-20 transition-all duration-300 md:translate-x-0 -translate-x-full" id="sidebar">
+    <div class="px-lg mb-8 flex items-center gap-3">
+      <div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-bold">
+        <span class="material-symbols-outlined fill-icon text-[20px]">bolt</span>
+      </div>
+      <div>
+        <h1 class="text-headline-md font-headline-md font-bold text-on-surface">RecoverIQ</h1>
+        <p class="font-label-mono text-label-mono text-on-surface-variant">Autonomous Revenue Recovery</p>
+      </div>
+    </div>
+    
+    <div class="px-md mb-4">
+      <p class="font-label-mono text-label-mono text-outline uppercase tracking-wider mb-2 px-3">Operations</p>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto px-md space-y-1">
+      <a class="bg-secondary-container text-on-secondary-container font-semibold rounded-lg mx-2 px-3 py-2 flex items-center gap-3 scale-95 transition-transform duration-150" href="/dashboard">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="font-body-md text-body-md">Command Center</span>
+      </a>
+      <a class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-3 py-2 flex items-center gap-3 transition-colors duration-200" href="/recovery-cases">
+        <span class="material-symbols-outlined">warning</span>
+        <span class="font-body-md text-body-md">Risk Cases</span>
+      </a>
+      <a class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-3 py-2 flex items-center gap-3 transition-colors duration-200" href="/ai-decisions">
+        <span class="material-symbols-outlined">psychology</span>
+        <span class="font-body-md text-body-md">AI Decisions &amp; Safety</span>
+      </a>
+      <a class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-3 py-2 flex items-center gap-3 transition-colors duration-200" href="/audit">
+        <span class="material-symbols-outlined">history_edu</span>
+        <span class="font-body-md text-body-md">Audit Trail</span>
+      </a>
+      <a class="text-on-surface-variant hover:bg-surface-variant rounded-lg mx-2 px-3 py-2 flex items-center gap-3 transition-colors duration-200" href="/evaluation">
+        <span class="material-symbols-outlined">analytics</span>
+        <span class="font-body-md text-body-md">Benchmark &amp; Evaluation</span>
+      </a>
+    </div>
+    
+    <div class="px-md mt-auto space-y-1 border-t border-outline-variant pt-4 mx-4">
+      <a class="text-on-surface-variant hover:bg-surface-variant rounded-lg px-3 py-2 flex items-center justify-between transition-colors duration-200" href="#">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined">sensors</span>
+          <span class="font-body-md text-body-md">System Telemetry</span>
+        </div>
+        <span class="w-2 h-2 rounded-full bg-primary"></span>
+      </a>
+      <a class="text-on-surface-variant hover:bg-surface-variant rounded-lg px-3 py-2 flex items-center gap-3 transition-colors duration-200" href="#">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-body-md text-body-md">Settings</span>
+      </a>
+      
+      <!-- User Profile Snippet -->
+      <div class="mt-4 pt-4 border-t border-outline-variant flex items-center gap-3 px-2">
+        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold font-label-mono">
+          JD
+        </div>
+        <div>
+          <p class="font-body-md text-body-md text-on-surface font-medium">Jane Doe</p>
+          <p class="font-label-mono text-label-mono text-on-surface-variant">Admin</p>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col ml-0 md:ml-[260px] min-w-0 transition-all duration-300">
+    <!-- TopAppBar -->
+    <header class="bg-surface docked full-width top flex justify-between items-center w-full px-lg py-md border-b border-outline-variant z-10">
+      <div class="flex items-center gap-4">
+        <button class="md:hidden text-on-surface-variant p-2 -ml-2 rounded-lg hover:bg-surface-variant" onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full')">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div>
+          <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface md:block hidden">RecoverIQ Command Center</h2>
+          <h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface md:hidden block">Command Center</h2>
+          <p class="font-label-mono text-label-mono text-on-surface-variant flex items-center gap-2 mt-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            Gateway Telemetry Active
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <!-- Status Pills -->
+        <div class="hidden lg:flex items-center gap-3 mr-4">
+          <div class="flex flex-col border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+            <span class="font-label-mono text-label-mono text-outline text-[10px] uppercase">Backend</span>
+            <span class="font-body-md text-body-md text-primary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Live</span>
+          </div>
+          <div class="flex flex-col border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+            <span class="font-label-mono text-label-mono text-outline text-[10px] uppercase">Razorpay</span>
+            <span class="font-body-md text-body-md text-on-surface font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">bolt</span> Buildathon</span>
+          </div>
+          <div class="flex flex-col border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+            <span class="font-label-mono text-label-mono text-outline text-[10px] uppercase">Safety</span>
+            <span class="font-body-md text-body-md text-primary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">shield</span> Deterministic</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors duration-200" title="System Telemetry">
+            <span class="material-symbols-outlined">sensors</span>
+          </button>
+          <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors duration-200" title="Security Settings">
+            <span class="material-symbols-outlined">security</span>
+          </button>
+          <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/10 rounded-full transition-colors duration-200" title="Refresh Data" onclick="location.reload()">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+        </div>
+        
+        <a href="/recovery-cases" class="bg-primary text-on-primary font-body-md font-medium px-4 py-2 rounded flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Add Case
+        </a>
+      </div>
+    </header>
+
+    <!-- Dashboard Content Canvas -->
+    <main class="flex-1 overflow-y-auto bg-surface-container-lowest p-lg">
+      <div class="max-w-container-max mx-auto space-y-lg">
+        <!-- AI Insight Banner -->
+        <div class="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center gap-3 mb-lg">
+          <span class="material-symbols-outlined text-primary">psychology</span>
+          <p class="text-body-md text-on-surface flex-1">
+            <span class="font-bold">AI Insight:</span> Network errors have spiked 12% in the last hour; consider switching primary gateway to Razorpay for Enterprise traffic.
+          </p>
+          <button class="text-primary font-label-mono text-[12px] font-bold hover:underline" onclick="alert('Applying AI routing policy optimization to Razorpay gateway...')">
+            OPTIMIZE NOW
+          </button>
+        </div>
+
+        <!-- Hero Metrics Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+          <!-- Metric Card 1 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between min-h-[160px] relative overflow-hidden group hover:border-primary/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-error/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <div class="flex justify-between items-start z-10">
+              <h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+                Revenue at Risk
+                <span class="material-symbols-outlined text-[14px] text-outline cursor-help" title="Total unresolved exposure across all gateways">info</span>
+              </h3>
+              <div class="bg-error-container text-on-error-container p-1.5 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px]">warning</span>
+              </div>
+            </div>
+            <div class="z-10 mt-4">
+              <div class="font-data-point text-display-lg text-on-surface font-bold">₹27,199.00</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="font-body-md text-body-md text-on-surface-variant">Unresolved exposure</span>
+                <span class="font-label-mono text-label-mono font-bold text-error bg-error/10 px-2 py-0.5 rounded">3 cases</span>
+                <span class="font-label-mono text-[10px] text-error flex items-center gap-0.5">+14% <span class="material-symbols-outlined text-[12px]">trending_up</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric Card 2 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between min-h-[160px] relative overflow-hidden group hover:border-primary/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <div class="flex justify-between items-start z-10">
+              <h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+                Revenue Recovered
+                <span class="material-symbols-outlined text-[14px] text-outline cursor-help" title="Total verified settlements in current cycle">info</span>
+              </h3>
+              <div class="bg-primary/10 text-primary p-1.5 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px] fill-icon">check_circle</span>
+              </div>
+            </div>
+            <div class="z-10 mt-4">
+              <div class="font-data-point text-display-lg text-on-surface font-bold">₹12,500.00</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="font-body-md text-body-md text-on-surface-variant">Verified settlements</span>
+                <span class="font-label-mono text-label-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">2 saved</span>
+                <span class="font-label-mono text-[10px] text-primary flex items-center gap-0.5">+8% <span class="material-symbols-outlined text-[12px]">trending_up</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric Card 3 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between min-h-[160px] relative overflow-hidden group hover:border-primary/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-tertiary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <div class="flex justify-between items-start z-10">
+              <h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+                Recovery Rate
+                <span class="material-symbols-outlined text-[14px] text-outline cursor-help" title="Percentage of exposed revenue successfully recovered">info</span>
+              </h3>
+              <div class="text-on-surface-variant p-1.5 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]">trending_up</span>
+              </div>
+            </div>
+            <div class="z-10 mt-4">
+              <div class="font-data-point text-display-lg text-on-surface font-bold">46.0%</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="font-body-md text-body-md text-on-surface-variant">Success velocity</span>
+                <span class="font-label-mono text-label-mono font-medium text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded">2 / 5 cases</span>
+                <span class="font-label-mono text-[10px] text-primary flex items-center gap-0.5">+2.4% <span class="material-symbols-outlined text-[12px]">trending_up</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Data Row: Critical Exposure Cases -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col relative overflow-hidden mb-lg">
+          <div class="flex justify-between items-start mb-6 z-10">
+            <div>
+              <h3 class="font-headline-md text-headline-md text-on-surface">Critical Exposure Cases</h3>
+              <p class="font-body-md text-body-md text-on-surface-variant mt-1">High-value transactions or cases with severe failure probability</p>
+            </div>
+            <a href="/recovery-cases" class="font-label-mono text-label-mono text-primary font-medium hover:underline flex items-center gap-1">
+              Inspect Cases <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+            </a>
+          </div>
+          <div class="overflow-x-auto z-10">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-outline-variant/50">
+                  <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase w-1/4">Case ID / Reason</th>
+                  <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase w-1/6">User Segment</th>
+                  <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-right w-1/6">Exposure</th>
+                  <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-center w-1/6">Risk</th>
+                  <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-right">Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-outline-variant/30 hover:bg-error/5 transition-colors">
+                  <td class="py-3">
+                    <a href="/recovery-cases" class="font-label-mono font-medium text-primary hover:underline">#RC-9921</a>
+                    <div class="font-body-md text-on-surface-variant text-[12px] mt-0.5">Insufficient Funds</div>
+                  </td>
+                  <td class="py-3 font-body-md text-on-surface">Enterprise</td>
+                  <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹15,000.00</td>
+                  <td class="py-3 text-center">
+                    <span class="inline-flex items-center justify-center bg-error text-on-error px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">HIGH RISK</span>
+                  </td>
+                  <td class="py-3 text-right">
+                    <div class="flex justify-end gap-2">
+                      <button class="px-2.5 py-1 bg-primary text-on-primary text-[10px] font-bold rounded hover:opacity-90 transition-opacity" onclick="alert('Triggering smart retry for #RC-9921')">RETRY</button>
+                      <a href="/recovery-cases" class="px-2.5 py-1 border border-outline-variant text-on-surface-variant text-[10px] font-bold rounded hover:bg-surface-variant transition-colors">INVESTIGATE</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="border-b border-outline-variant/30 hover:bg-error/5 transition-colors">
+                  <td class="py-3">
+                    <a href="/recovery-cases" class="font-label-mono font-medium text-primary hover:underline">#RC-9918</a>
+                    <div class="font-body-md text-on-surface-variant text-[12px] mt-0.5">Card Expired</div>
+                  </td>
+                  <td class="py-3 font-body-md text-on-surface">Pro Tier</td>
+                  <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹8,500.00</td>
+                  <td class="py-3 text-center">
+                    <span class="inline-flex items-center justify-center bg-error text-on-error px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">HIGH RISK</span>
+                  </td>
+                  <td class="py-3 text-right">
+                    <div class="flex justify-end gap-2">
+                      <button class="px-2.5 py-1 bg-primary text-on-primary text-[10px] font-bold rounded hover:opacity-90 transition-opacity" onclick="alert('Triggering smart retry for #RC-9918')">RETRY</button>
+                      <a href="/recovery-cases" class="px-2.5 py-1 border border-outline-variant text-on-surface-variant text-[10px] font-bold rounded hover:bg-surface-variant transition-colors">INVESTIGATE</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-error/5 transition-colors">
+                  <td class="py-3">
+                    <a href="/recovery-cases" class="font-label-mono font-medium text-primary hover:underline">#RC-9874</a>
+                    <div class="font-body-md text-on-surface-variant text-[12px] mt-0.5">Bank Decline</div>
+                  </td>
+                  <td class="py-3 font-body-md text-on-surface">Pro Tier</td>
+                  <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹3,699.00</td>
+                  <td class="py-3 text-center">
+                    <span class="inline-flex items-center justify-center bg-[#c9a671] text-on-primary px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">MODERATE</span>
+                  </td>
+                  <td class="py-3 text-right">
+                    <div class="flex justify-end gap-2">
+                      <button class="px-2.5 py-1 bg-primary text-on-primary text-[10px] font-bold rounded hover:opacity-90 transition-opacity" onclick="alert('Triggering smart retry for #RC-9874')">RETRY</button>
+                      <a href="/recovery-cases" class="px-2.5 py-1 border border-outline-variant text-on-surface-variant text-[10px] font-bold rounded hover:bg-surface-variant transition-colors">INVESTIGATE</a>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Performance Trend Chart & Root Cause Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-lg">
+          <!-- Performance Trend Chart -->
+          <div class="xl:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="font-headline-md text-headline-md text-on-surface">Recovery Performance Trend</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-1">Chronological daily comparison of recovered revenue vs new exposure (Past 14 Days)</p>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-primary"></div>
+                  <span class="font-label-mono text-label-mono text-on-surface-variant">Recovered (₹)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-error"></div>
+                  <span class="font-label-mono text-label-mono text-on-surface-variant">At Risk (₹)</span>
+                </div>
+              </div>
+            </div>
+            <!-- Chart Area with SVG styling -->
+            <div class="flex-1 relative min-h-[300px] w-full mt-4">
+              <!-- Y-Axis Labels -->
+              <div class="absolute left-0 top-0 bottom-6 w-12 flex flex-col justify-between font-label-mono text-label-mono text-outline text-right pr-2">
+                <span>₹28000</span>
+                <span>₹21000</span>
+                <span>₹14000</span>
+                <span>₹7000</span>
+                <span>₹0</span>
+              </div>
+              <!-- Grid Lines & Chart Lines -->
+              <div class="absolute left-12 right-0 top-2 bottom-6 border-l border-b border-outline-variant/30">
+                <!-- Horizontal Grids -->
+                <div class="absolute w-full h-[25%] border-t border-outline-variant/20 top-0"></div>
+                <div class="absolute w-full h-[25%] border-t border-outline-variant/20 top-[25%]"></div>
+                <div class="absolute w-full h-[25%] border-t border-outline-variant/20 top-[50%]"></div>
+                <div class="absolute w-full h-[25%] border-t border-outline-variant/20 top-[75%]"></div>
+                
+                <!-- The "Recovered" Line (Primary) -->
+                <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 240 100">
+                  <defs>
+                    <linearGradient id="recoveredGradient" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#1a1a1a" stop-opacity="0.15"></stop>
+                      <stop offset="100%" stop-color="#1a1a1a" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <linearGradient id="riskGradient" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#cc0000" stop-opacity="0.12"></stop>
+                      <stop offset="100%" stop-color="#cc0000" stop-opacity="0"></stop>
+                    </linearGradient>
+                  </defs>
+                  <!-- Gradient fill under recovered -->
+                  <path d="M0,80 Q30,75 60,60 T120,50 T180,45 L240,35 L240,100 L0,100 Z" fill="url(#recoveredGradient)"></path>
+                  <path d="M0,80 Q30,75 60,60 T120,50 T180,45 L240,35" fill="none" stroke="#1a1a1a" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+                  <!-- Gradient fill under risk -->
+                  <path d="M0,40 Q40,45 80,55 T160,65 L240,75 L240,100 L0,100 Z" fill="url(#riskGradient)"></path>
+                  <path d="M0,40 Q40,45 80,55 T160,65 L240,75" fill="none" stroke="#cc0000" stroke-width="2" stroke-dasharray="4 2" vector-effect="non-scaling-stroke"></path>
+                </svg>
+              </div>
+              <!-- X-Axis Labels -->
+              <div class="absolute left-12 right-0 bottom-0 h-6 flex justify-between font-label-mono text-label-mono text-outline pt-2 px-4">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Root Cause Breakdown -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-4">
+                <h3 class="font-headline-md text-headline-md text-on-surface">Failure Root Causes</h3>
+                <span class="font-label-mono text-label-mono text-outline uppercase">Active</span>
+              </div>
+              <p class="font-body-md text-body-md text-on-surface-variant mb-4">Categorical distribution of incoming failure telemetry</p>
+              
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between font-label-mono text-[12px] mb-1">
+                    <span class="text-on-surface font-medium">Insufficient Funds</span>
+                    <span class="text-on-surface font-bold">35%</span>
+                  </div>
+                  <div class="w-full h-2 rounded bg-surface-variant overflow-hidden">
+                    <div class="h-full bg-primary" style="width: 35%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-label-mono text-[12px] mb-1">
+                    <span class="text-on-surface font-medium">Card Expired</span>
+                    <span class="text-on-surface font-bold">25%</span>
+                  </div>
+                  <div class="w-full h-2 rounded bg-surface-variant overflow-hidden">
+                    <div class="h-full bg-[#c9a671]" style="width: 25%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-label-mono text-[12px] mb-1">
+                    <span class="text-on-surface font-medium">Bank Decline</span>
+                    <span class="text-on-surface font-bold">20%</span>
+                  </div>
+                  <div class="w-full h-2 rounded bg-surface-variant overflow-hidden">
+                    <div class="h-full bg-error" style="width: 20%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-label-mono text-[12px] mb-1">
+                    <span class="text-on-surface font-medium">Network Timeout</span>
+                    <span class="text-on-surface font-bold">20%</span>
+                  </div>
+                  <div class="w-full h-2 rounded bg-surface-variant overflow-hidden">
+                    <div class="h-full bg-tertiary" style="width: 20%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-outline-variant/30 flex items-center justify-between">
+              <span class="font-body-md text-[13px] text-on-surface-variant">Autonomous Auto-Routing</span>
+              <span class="font-label-mono text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">ENABLED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Tables Row -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-lg pb-lg">
+          <!-- Recent Recovery Actions -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="font-headline-md text-headline-md text-on-surface">Recent Recovery Actions</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-1">Live actions dispatched under deterministic policy</p>
+              </div>
+              <a href="/ai-decisions" class="font-label-mono text-label-mono text-primary font-medium hover:underline flex items-center gap-1">
+                All Decisions <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+              </a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-outline-variant/50">
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase w-1/3">Action / Time</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase w-1/4">Gateway</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-right w-1/4">Amount</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-center w-1/6">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+                    <td class="py-3">
+                      <div class="font-body-md text-on-surface font-medium">Retry Payment</div>
+                      <div class="font-label-mono text-outline text-[10px]">10 mins ago</div>
+                    </td>
+                    <td class="py-3 font-body-md text-on-surface-variant">Razorpay</td>
+                    <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹4,500.00</td>
+                    <td class="py-3 text-center">
+                      <span class="inline-flex items-center justify-center bg-primary/10 text-primary px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">SUCCESS</span>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+                    <td class="py-3">
+                      <div class="font-body-md text-on-surface font-medium">Send Email Prompt</div>
+                      <div class="font-label-mono text-outline text-[10px]">45 mins ago</div>
+                    </td>
+                    <td class="py-3 font-body-md text-on-surface-variant">Stripe</td>
+                    <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹1,200.00</td>
+                    <td class="py-3 text-center">
+                      <span class="inline-flex items-center justify-center bg-outline-variant/30 text-on-surface-variant px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">PENDING</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="py-3">
+                      <div class="font-body-md text-on-surface font-medium">Auto-Resolve</div>
+                      <div class="font-label-mono text-outline text-[10px]">2 hours ago</div>
+                    </td>
+                    <td class="py-3 font-body-md text-on-surface-variant">Razorpay</td>
+                    <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹8,000.00</td>
+                    <td class="py-3 text-center">
+                      <span class="inline-flex items-center justify-center bg-primary/10 text-primary px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">SUCCESS</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Critical Exposure Cases & CTA -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col relative overflow-hidden">
+            <div class="flex justify-between items-start mb-6 z-10">
+              <div>
+                <h3 class="font-headline-md text-headline-md text-on-surface">Critical Exposure Cases</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-1">High-value transactions or cases with severe failure probability</p>
+              </div>
+              <a href="/recovery-cases" class="font-label-mono text-label-mono text-primary font-medium hover:underline flex items-center gap-1">
+                Inspect Cases <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+              </a>
+            </div>
+            <div class="overflow-x-auto z-10">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-outline-variant/50">
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase w-1/3">Case ID / Reason</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase w-1/4">User Segment</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-right w-1/4">Exposure</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-center w-1/6">Risk</th>
+                    <th class="font-label-mono text-label-mono text-outline py-3 font-medium uppercase text-right">Quick Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-outline-variant/30 hover:bg-error/5 transition-colors">
+                    <td class="py-3">
+                      <a href="/recovery-cases" class="font-label-mono font-medium text-primary hover:underline">#RC-9921</a>
+                      <div class="font-body-md text-on-surface-variant text-[12px] mt-0.5">Insufficient Funds</div>
+                    </td>
+                    <td class="py-3 font-body-md text-on-surface">Enterprise</td>
+                    <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹15,000.00</td>
+                    <td class="py-3 text-center">
+                      <span class="inline-flex items-center justify-center bg-error/10 text-error px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">HIGH</span>
+                    </td>
+                    <td class="py-3 text-right">
+                      <div class="flex justify-end gap-2">
+                        <button class="px-2 py-1 bg-primary text-on-primary text-[10px] font-bold rounded hover:opacity-90">RETRY</button>
+                        <a href="/recovery-cases" class="px-2 py-1 border border-outline-variant text-on-surface-variant text-[10px] font-bold rounded hover:bg-surface-variant">INVESTIGATE</a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-outline-variant/30 hover:bg-error/5 transition-colors">
+                    <td class="py-3">
+                      <a href="/recovery-cases" class="font-label-mono font-medium text-primary hover:underline">#RC-9918</a>
+                      <div class="font-body-md text-on-surface-variant text-[12px] mt-0.5">Card Expired</div>
+                    </td>
+                    <td class="py-3 font-body-md text-on-surface">Pro Tier</td>
+                    <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹8,500.00</td>
+                    <td class="py-3 text-center">
+                      <span class="inline-flex items-center justify-center bg-error/10 text-error px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">HIGH</span>
+                    </td>
+                    <td class="py-3 text-right">
+                      <div class="flex justify-end gap-2">
+                        <button class="px-2 py-1 bg-primary text-on-primary text-[10px] font-bold rounded hover:opacity-90">RETRY</button>
+                        <a href="/recovery-cases" class="px-2 py-1 border border-outline-variant text-on-surface-variant text-[10px] font-bold rounded hover:bg-surface-variant">INVESTIGATE</a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-error/5 transition-colors">
+                    <td class="py-3">
+                      <a href="/recovery-cases" class="font-label-mono font-medium text-primary hover:underline">#RC-9874</a>
+                      <div class="font-body-md text-on-surface-variant text-[12px] mt-0.5">Bank Decline</div>
+                    </td>
+                    <td class="py-3 font-body-md text-on-surface">Pro Tier</td>
+                    <td class="py-3 font-data-point text-on-surface font-semibold text-right text-[16px]">₹3,699.00</td>
+                    <td class="py-3 text-center">
+                      <span class="inline-flex items-center justify-center bg-error/5 text-error px-2 py-0.5 rounded font-label-mono text-[10px] font-bold">MED</span>
+                    </td>
+                    <td class="py-3 text-right">
+                      <div class="flex justify-end gap-2">
+                        <button class="px-2 py-1 bg-primary text-on-primary text-[10px] font-bold rounded hover:opacity-90">RETRY</button>
+                        <a href="/recovery-cases" class="px-2 py-1 border border-outline-variant text-on-surface-variant text-[10px] font-bold rounded hover:bg-surface-variant">INVESTIGATE</a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- CTA Overlay floating at bottom right -->
+            <div class="mt-4 pt-4 border-t border-outline-variant/30 flex justify-end z-20">
+              <a href="/evaluation" class="bg-[#e4d3a2] hover:bg-[#d8c58f] text-on-background font-body-md font-medium px-4 py-2 rounded shadow-[0_4px_12px_rgba(0,0,0,0.1)] flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined fill-icon text-[18px]">play_arrow</span>
+                Launch Live Demo Scenarios
+                <span class="ml-2 font-label-mono text-[10px] bg-on-background/10 px-1.5 py-0.5 rounded">4 Scenarios</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
