@@ -426,6 +426,29 @@ class DevMemoryStore {
   public query(sql: string, params: unknown[] = []): { rows: unknown[]; rowCount: number } {
     const trimmed = sql.trim();
 
+    // 0. Migration checks
+    if (trimmed.includes('information_schema.tables') && trimmed.includes('pgmigrations')) {
+      return { rows: [{ exists: true }], rowCount: 1 };
+    }
+    if (trimmed.includes('FROM pgmigrations')) {
+      const devMigrations = [
+        { id: 1, name: '20260824000001_create-enums', run_on: new Date('2026-08-24T00:00:01Z') },
+        { id: 2, name: '20260824000002_create-merchants', run_on: new Date('2026-08-24T00:00:02Z') },
+        { id: 3, name: '20260824000003_create-customers', run_on: new Date('2026-08-24T00:00:03Z') },
+        { id: 4, name: '20260824000004_create-payments', run_on: new Date('2026-08-24T00:00:04Z') },
+        { id: 5, name: '20260824000005_create-subscriptions', run_on: new Date('2026-08-24T00:00:05Z') },
+        { id: 6, name: '20260824000006_create-revenue-risk-cases', run_on: new Date('2026-08-24T00:00:06Z') },
+        { id: 7, name: '20260824000007_create-recovery-actions', run_on: new Date('2026-08-24T00:00:07Z') },
+        { id: 8, name: '20260824000008_create-ai-decisions', run_on: new Date('2026-08-24T00:00:08Z') },
+        { id: 9, name: '20260824000009_create-webhook-events', run_on: new Date('2026-08-24T00:00:09Z') },
+        { id: 10, name: '20260824000010_create-audit-logs', run_on: new Date('2026-08-24T00:00:10Z') },
+        { id: 11, name: '20260824000011_create-policy-rules', run_on: new Date('2026-08-24T00:00:11Z') },
+        { id: 12, name: '20260824000012_create-notification-attempts', run_on: new Date('2026-08-24T00:00:12Z') },
+        { id: 13, name: '20260824000013_create-indexes-and-triggers', run_on: new Date('2026-08-24T00:00:13Z') },
+      ];
+      return { rows: devMigrations, rowCount: devMigrations.length };
+    }
+
     // 1. SELECT 1 Health Check
     if (trimmed.startsWith('SELECT 1')) {
       return { rows: [{ '?column?': 1 }], rowCount: 1 };

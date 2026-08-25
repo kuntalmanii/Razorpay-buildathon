@@ -39,7 +39,7 @@ async function checkMigrationStatus(): Promise<void> {
     ) AS exists;
   `);
 
-  if (!rows[0].exists) {
+  if (!rows || rows.length === 0 || !rows[0]?.exists) {
     logger.warn('pgmigrations table not found — no migrations have been run yet.');
     logger.warn('Run `npm run migrate:up` to apply all migrations.');
     await closePool();
