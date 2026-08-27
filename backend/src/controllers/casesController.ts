@@ -89,7 +89,14 @@ export class CasesController {
     };
 
     const amountAtRisk = Number(body.amount_at_risk);
-    const riskScore = Number(body.risk_score ?? 50);
+    let riskScore = Number(body.risk_score ?? 0.5);
+    if (riskScore > 1) {
+      riskScore = Math.min(Math.max(riskScore / 100, 0), 1);
+    }
+    let recoveryProb = body.recovery_probability !== undefined ? Number(body.recovery_probability) : 0.5;
+    if (recoveryProb > 1) {
+      recoveryProb = Math.min(Math.max(recoveryProb / 100, 0), 1);
+    }
 
     if (!body.failure_category) {
       throw new ValidationError('failure_category is required');
@@ -113,7 +120,7 @@ export class CasesController {
       currency: body.currency || 'INR',
       failure_category: failureCategory,
       risk_score: riskScore,
-      recovery_probability: body.recovery_probability ? Number(body.recovery_probability) : 0.5,
+      recovery_probability: recoveryProb,
       recovery_reason: body.recovery_reason,
     });
 
@@ -142,8 +149,16 @@ export class CasesController {
 
     const payload: Parameters<typeof CasesService.updateCase>[1] = {};
     if (body.status !== undefined) payload.status = body.status;
-    if (body.risk_score !== undefined) payload.risk_score = Number(body.risk_score);
-    if (body.recovery_probability !== undefined) payload.recovery_probability = Number(body.recovery_probability);
+    if (body.risk_score !== undefined) {
+      let r = Number(body.risk_score);
+      if (r > 1) r = Math.min(Math.max(r / 100, 0), 1);
+      payload.risk_score = r;
+    }
+    if (body.recovery_probability !== undefined) {
+      let p = Number(body.recovery_probability);
+      if (p > 1) p = Math.min(Math.max(p / 100, 0), 1);
+      payload.recovery_probability = p;
+    }
     if ('recovery_reason' in body) payload.recovery_reason = body.recovery_reason ?? null;
     if ('recovered_amount' in body) payload.recovered_amount = body.recovered_amount != null ? Number(body.recovered_amount) : null;
     if ('resolved_at' in body) payload.resolved_at = body.resolved_at ?? null;

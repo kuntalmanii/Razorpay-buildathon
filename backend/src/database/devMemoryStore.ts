@@ -231,7 +231,7 @@ class DevMemoryStore {
       action_type: 'retry_payment',
       proposed_by: 'ai',
       policy_status: 'rejected',
-      execution_status: 'failed',
+      execution_status: 'skipped',
       payload: {
         decision: 'RETRY',
         confidence: 0.65,
