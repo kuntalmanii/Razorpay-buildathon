@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import { Fragment } from 'react';
 import { RecoveryCase, RecoveryAction, AuditLog } from '@/types/api';
-import { formatINR, formatDate } from '@/lib/utils';
+import { formatINR } from '@/lib/utils';
 import {
   AlertTriangle,
   Activity,
@@ -16,7 +16,6 @@ import {
   Award,
   Lock,
   Stethoscope,
-  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -271,7 +270,7 @@ export function RecoveryFlowVisualizer({
             const isLast = idx === steps.length - 1;
 
             return (
-              <React.Fragment key={step.id}>
+              <Fragment key={step.id}>
                 <div
                   className={`flex-1 min-w-[92px] p-2.5 rounded-lg border flex flex-col justify-between transition-all ${
                     isCompleted
@@ -342,7 +341,7 @@ export function RecoveryFlowVisualizer({
                     &rarr;
                   </div>
                 )}
-              </React.Fragment>
+              </Fragment>
             );
           })}
         </div>

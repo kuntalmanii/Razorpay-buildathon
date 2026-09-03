@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { ShieldX, ArrowLeft, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';

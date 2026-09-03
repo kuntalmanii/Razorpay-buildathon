@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Activity, ShieldCheck, Zap } from 'lucide-react';
 import { Badge } from '../ui/badge';

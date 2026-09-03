@@ -15,7 +15,7 @@ import crypto from 'crypto';
 import { config } from '../config';
 import { UnauthorizedError } from '../utils/errors';
 
-export function apiAuthMiddleware(req: Request, res: Response, next: NextFunction): void {
+export function apiAuthMiddleware(req: Request, _res: Response, next: NextFunction): void {
   const configuredKey = config.server.apiKey;
 
   // In test or local dev when no key is explicitly configured, allow pass-through

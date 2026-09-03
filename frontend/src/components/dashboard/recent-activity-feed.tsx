@@ -1,18 +1,12 @@
 'use client';
 
-import React from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { AuditLog, RecoveryAction } from '@/types/api';
 import { formatDate } from '@/lib/utils';
 import {
   Activity,
   ArrowUpRight,
-  ShieldCheck,
-  Zap,
-  CheckCircle2,
-  AlertTriangle,
-  RotateCw,
-  Send,
   FileText,
 } from 'lucide-react';
 
@@ -26,7 +20,7 @@ export function RecentActivityFeed({
   actions,
 }: RecentActivityFeedProps) {
   // Combine audit events and actions into a unified chronological feed
-  const events = React.useMemo(() => {
+  const events = useMemo(() => {
     type UnifiedEvent = {
       id: string;
       title: string;

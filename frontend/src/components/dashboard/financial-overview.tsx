@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { formatINR } from '@/lib/utils';
 import { AlertTriangle, CheckCircle2, TrendingUp, Layers, CheckCircle } from 'lucide-react';
 import { MetricTooltip } from '@/components/ui/tooltip';

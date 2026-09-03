@@ -100,7 +100,7 @@ export class AuthController {
    * POST /api/auth/logout
    * Clears the auth cookie. No body required.
    */
-  static async logout(req: Request, res: Response): Promise<void> {
+  static async logout(_req: Request, res: Response): Promise<void> {
     clearAuthCookie(res);
     sendSuccess(res, { message: 'Logged out successfully' }, 200);
   }

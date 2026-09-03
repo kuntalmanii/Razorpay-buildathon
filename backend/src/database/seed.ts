@@ -53,7 +53,7 @@ async function seed(): Promise<void> {
         ('MID_DEV_002', 'TechStart India', 'billing@techstart.dev', '+919876543210', 'TechStart India LLP', 'active')
       RETURNING merchant_id;
     `);
-    const [merchantA, merchantB] = merchantResult.rows;
+    const [merchantA] = merchantResult.rows;
 
     // ─── Customers ──────────────────────────────────────────────────────────
     logger.info('Seeding customers...');
@@ -84,7 +84,7 @@ async function seed(): Promise<void> {
       RETURNING payment_id;
     `, [merchantA.merchant_id, cust1.customer_id, cust2.customer_id]);
 
-    const [, failedPay1, failedPay2, , pendingPay] = paymentResult.rows;
+    const [, failedPay1, failedPay2] = paymentResult.rows;
 
     // ─── Subscriptions ──────────────────────────────────────────────────────
     logger.info('Seeding subscriptions...');

@@ -6,7 +6,7 @@
  * duplicate webhooks, worker crashes, and concurrent state race conditions.
  */
 
-import { SimulationType, ActiveFaultConfig, ScenarioRunResult } from './simulation.types';
+import { SimulationType, ActiveFaultConfig } from './simulation.types';
 import { getPool } from '../database/connection';
 import { logger } from '../utils/logger';
 import { config } from '../config';

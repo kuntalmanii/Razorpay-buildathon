@@ -10,7 +10,7 @@ export class EvaluationController {
   /**
    * GET /api/evaluation
    */
-  public static async getEvaluation(req: Request, res: Response): Promise<void> {
+  public static async getEvaluation(_req: Request, res: Response): Promise<void> {
     let report = EvaluationService.getLatestReport();
     if (!report) {
       report = await EvaluationService.runEvaluation();
@@ -21,7 +21,7 @@ export class EvaluationController {
   /**
    * POST /api/evaluation/run
    */
-  public static async runEvaluation(req: Request, res: Response): Promise<void> {
+  public static async runEvaluation(_req: Request, res: Response): Promise<void> {
     const report = await EvaluationService.runEvaluation();
     sendSuccess(res, report, 201);
   }

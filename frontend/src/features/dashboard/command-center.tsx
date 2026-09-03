@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import {
@@ -27,11 +27,9 @@ import {
   CartesianGrid,
 } from 'recharts';
 import {
-  Sparkles,
   ArrowUpRight,
   Zap,
   Play,
-  RotateCw,
 } from 'lucide-react';
 
 // New Modular User Dashboard Components

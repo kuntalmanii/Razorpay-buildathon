@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { EvaluationReport } from '@/types/api';
 import { formatINR, formatDate } from '@/lib/utils';
@@ -15,7 +15,6 @@ import {
   Award,
   Play,
   TrendingUp,
-  ShieldCheck,
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
@@ -30,7 +29,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   CartesianGrid,
   Legend,
 } from 'recharts';
@@ -86,8 +84,6 @@ export function EvaluationDashboard() {
       setEvalStep(null);
     }
   };
-
-  const CATEGORY_COLORS = ['#B89A62', '#6F9B7A', '#71879A', '#B68B4F', '#B56F68'];
 
   return (
     <div className="space-y-6 max-w-7xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150">

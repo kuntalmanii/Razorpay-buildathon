@@ -2,8 +2,6 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FailureClassifier,
-  RiskScoreService,
-  RecoveryProbabilityService,
   RevenueRiskService,
   isValidStateTransition,
   assertValidStateTransition,

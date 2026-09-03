@@ -1,19 +1,12 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { RecoveryAction, RecoveryCase } from '@/types/api';
-import { formatDate } from '@/lib/utils';
 import {
   Bot,
   ArrowUpRight,
-  ShieldCheck,
-  CheckCircle,
-  Clock,
   Sparkles,
-  Zap,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 interface AiRecommendationsProps {
   actions: RecoveryAction[];

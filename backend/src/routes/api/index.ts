@@ -19,6 +19,7 @@ import { webhooksApiRouter } from './webhooks';
 import { evaluationApiRouter } from './evaluation';
 import { authApiRouter } from './auth';
 import { usersApiRouter } from './users';
+import { adminApiRouter } from './admin';
 import { simulationRouter } from '../../simulation/simulation.router';
 import { jwtAuth } from '../../middleware/jwtAuth';
 import { requireAuth } from '../../middleware/requireAuth';
@@ -47,5 +48,6 @@ apiRouter.use('/metrics', metricsApiRouter);
 apiRouter.use('/evaluation', evaluationApiRouter);
 apiRouter.use('/simulation', simulationRouter);
 apiRouter.use('/users', usersApiRouter);
+apiRouter.use('/admin', adminApiRouter);
 
 

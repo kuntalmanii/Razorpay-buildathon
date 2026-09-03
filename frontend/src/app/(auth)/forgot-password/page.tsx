@@ -1,4 +1,3 @@
-import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, KeyRound, ShieldAlert } from 'lucide-react';
 

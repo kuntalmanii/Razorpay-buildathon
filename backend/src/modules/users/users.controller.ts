@@ -14,7 +14,7 @@ export class UsersController {
    * GET /api/users
    * Admin only: list all users in the system.
    */
-  static async list(req: Request, res: Response): Promise<void> {
+  static async list(_req: Request, res: Response): Promise<void> {
     const users = await UsersService.listUsers();
     sendSuccess(res, { users }, 200);
   }

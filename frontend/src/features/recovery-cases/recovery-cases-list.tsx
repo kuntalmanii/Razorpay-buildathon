@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
-import { RecoveryCase, PaginationMeta } from '@/types/api';
+import { RecoveryCase } from '@/types/api';
 import { formatINR, formatDate, getStatusBadge } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { TableRowSkeleton } from '@/components/ui/skeleton';
@@ -21,10 +21,6 @@ import {
   Plus,
   Pencil,
   X,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  ShieldAlert,
   Zap,
 } from 'lucide-react';
 import { AddCaseModal } from './add-case-modal';

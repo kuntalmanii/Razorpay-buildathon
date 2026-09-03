@@ -13,7 +13,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getPool } from '../../database/connection';
 import { config } from '../../config';
-import { UnauthorizedError, ConflictError, NotFoundError } from '../../utils/errors';
+import { UnauthorizedError, ConflictError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 
 export type UserRole = 'user' | 'admin';

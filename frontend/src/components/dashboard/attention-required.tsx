@@ -1,16 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { RecoveryCase, RecoveryAction } from '@/types/api';
 import { formatINR, formatDate } from '@/lib/utils';
 import {
-  AlertTriangle,
   ArrowUpRight,
   RotateCw,
   CheckCircle,
-  ExternalLink,
-  ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

@@ -82,6 +82,34 @@ export interface DevUser {
   updated_at: string;
 }
 
+export interface DevPolicyRule {
+  rule_id: string;
+  name: string;
+  description: string;
+  action_type: string;
+  conditions: Record<string, unknown>;
+  constraints: Record<string, unknown>;
+  priority: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DevAiDecision {
+  decision_id: string;
+  case_id: string;
+  model_provider: string;
+  model_name: string;
+  decision_type: string;
+  structured_input: Record<string, unknown>;
+  structured_output: Record<string, unknown>;
+  confidence: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  latency_ms: number;
+  created_at: string;
+}
+
 class DevMemoryStore {
   public cases: DevCase[] = [
     {
@@ -464,6 +492,96 @@ class DevMemoryStore {
     },
   ];
 
+  public policyRules: DevPolicyRule[] = [
+    {
+      rule_id: 'rule_dev_001',
+      name: 'Mandate Failure Cooldown',
+      description: 'Enforce minimum 24-hour banking cooldown on failed recurring mandates',
+      action_type: 'retry_payment',
+      conditions: { failure_category: 'subscription_halt' },
+      constraints: { cooldown_hours: 24, max_retries: 2 },
+      priority: 100,
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    },
+    {
+      rule_id: 'rule_dev_002',
+      name: 'High Risk Human Gate',
+      description: 'Require explicit human operator approval for transactions with risk score >= 70',
+      action_type: 'retry_payment',
+      conditions: { risk_score_gte: 70 },
+      constraints: { require_human_approval: true },
+      priority: 90,
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    },
+    {
+      rule_id: 'rule_dev_003',
+      name: 'Zero Duplicate Links Rule',
+      description: 'Prevent creating duplicate active payment links for the same payment/subscription',
+      action_type: 'create_payment_link',
+      conditions: { active_links_gte: 1 },
+      constraints: { block_action: true },
+      priority: 80,
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    },
+  ];
+
+  public aiDecisions: DevAiDecision[] = [
+    {
+      decision_id: 'dec_dev_001',
+      case_id: 'case_dev_001',
+      model_provider: 'gemini',
+      model_name: 'gemini-1.5-pro',
+      decision_type: 'payment_link',
+      structured_input: {
+        amount_at_risk: 500000,
+        currency: 'INR',
+        failure_category: 'insufficient_funds',
+        risk_score: 45,
+      },
+      structured_output: {
+        strategy: 'CREATE_PAYMENT_LINK',
+        channel: 'whatsapp_sms',
+        confidence: 0.88,
+        reasoning: 'Recurring card mandate failed with insufficient funds. Direct payment link offers highest recovery rate.',
+      },
+      confidence: 0.88,
+      prompt_tokens: 412,
+      completion_tokens: 94,
+      latency_ms: 320,
+      created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+    },
+    {
+      decision_id: 'dec_dev_002',
+      case_id: 'case_dev_002',
+      model_provider: 'gemini',
+      model_name: 'gemini-1.5-pro',
+      decision_type: 'retry',
+      structured_input: {
+        amount_at_risk: 120000,
+        currency: 'INR',
+        failure_category: 'network_error',
+        risk_score: 25,
+      },
+      structured_output: {
+        strategy: 'SCHEDULE_RETRY',
+        cooldown_hours: 4,
+        confidence: 0.92,
+        reasoning: 'Transient gateway timeout during bank settlement window. Retry after 4 hours.',
+      },
+      confidence: 0.92,
+      prompt_tokens: 380,
+      completion_tokens: 82,
+      latency_ms: 280,
+      created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+    },
+  ];
+
   public query(sql: string, params: unknown[] = []): { rows: unknown[]; rowCount: number } {
     const trimmed = sql.trim();
 
@@ -490,6 +608,33 @@ class DevMemoryStore {
       return { rows: devMigrations, rowCount: devMigrations.length };
     }
 
+    // 0.1 Admin Overview Check
+    if (trimmed.includes('total_users') && trimmed.includes('total_cases')) {
+      const totalUsers = this.users.length;
+      const totalCases = this.cases.length;
+      const activeCases = this.cases.filter((c) => c.status === 'open' || c.status === 'in_progress').length;
+      let totalRecovered = 0n;
+      let totalAtRisk = 0n;
+      for (const c of this.cases) {
+        totalAtRisk += BigInt(c.amount_at_risk || '0');
+        if (c.recovered_amount) totalRecovered += BigInt(c.recovered_amount);
+      }
+      const blockedActions = this.actions.filter((a) => a.policy_status === 'rejected').length;
+      const failedActions = this.actions.filter((a) => a.execution_status === 'failed').length;
+      return {
+        rows: [{
+          total_users: totalUsers,
+          total_cases: totalCases,
+          active_cases: activeCases,
+          total_recovered: totalRecovered.toString(),
+          total_at_risk: totalAtRisk.toString(),
+          blocked_actions: blockedActions,
+          failed_actions: failedActions,
+        }],
+        rowCount: 1,
+      };
+    }
+
     // 1. SELECT 1 Health Check
     if (trimmed.startsWith('SELECT 1')) {
       return { rows: [{ '?column?': 1 }], rowCount: 1 };
@@ -506,7 +651,7 @@ class DevMemoryStore {
     }
 
     // 3. Dashboard Financial Aggregate Query
-    if (trimmed.includes('COALESCE(SUM(amount_at_risk)') || trimmed.includes('SUM(amount_at_risk)')) {
+    if ((trimmed.includes('COALESCE(SUM(amount_at_risk)') || trimmed.includes('SUM(amount_at_risk)')) && !trimmed.includes('total_users')) {
       let atRisk = 0n;
       let recovered = 0n;
       for (const c of this.cases) {
@@ -654,7 +799,7 @@ class DevMemoryStore {
     }
 
     // 10. Cases List Query
-    if (trimmed.includes('FROM revenue_risk_cases')) {
+    if (trimmed.includes('FROM revenue_risk_cases') && !trimmed.includes('total_users')) {
       let filtered = [...this.cases];
       const statusParam = params.find((p) => typeof p === 'string' && ['open', 'in_progress', 'recovered', 'escalated', 'unrecoverable'].includes(p as string));
       if (statusParam) {
@@ -859,12 +1004,77 @@ class DevMemoryStore {
     }
 
     // U5. SELECT all users (for admin list)
-    if (trimmed.includes('FROM users') && (trimmed.includes('ORDER BY created_at') || trimmed.startsWith('SELECT user_id, name, email, role'))) {
+    if (trimmed.includes('FROM users') && !trimmed.includes('activity_count') && (trimmed.includes('ORDER BY created_at') || trimmed.startsWith('SELECT user_id, name, email, role'))) {
       const safeUsers = this.users.map((u) => {
         const { password_hash: _ph, ...safe } = u;
         return safe;
       });
       return { rows: safeUsers, rowCount: safeUsers.length };
+    }
+
+    // ADM1. Admin System Overview
+    if (trimmed.includes('total_users') && trimmed.includes('total_cases') && trimmed.includes('blocked_actions')) {
+      const totalUsers = this.users.length;
+      const totalCases = this.cases.length;
+      const activeCases = this.cases.filter((c) => c.status === 'open' || c.status === 'in_progress').length;
+      let totalRecovered = 0n;
+      let totalAtRisk = 0n;
+      for (const c of this.cases) {
+        totalAtRisk += BigInt(c.amount_at_risk || '0');
+        if (c.recovered_amount) totalRecovered += BigInt(c.recovered_amount);
+      }
+      const blockedActions = this.actions.filter((a) => a.policy_status === 'rejected').length;
+      const failedActions = this.actions.filter((a) => a.execution_status === 'failed').length;
+      return {
+        rows: [{
+          total_users: totalUsers,
+          total_cases: totalCases,
+          active_cases: activeCases,
+          total_recovered: totalRecovered.toString(),
+          total_at_risk: totalAtRisk.toString(),
+          blocked_actions: blockedActions,
+          failed_actions: failedActions,
+        }],
+        rowCount: 1,
+      };
+    }
+
+    // ADM2. Admin Users with Activity Count
+    if (trimmed.includes('FROM users') && trimmed.includes('activity_count')) {
+      const rows = this.users.map((u) => {
+        const { password_hash: _ph, ...safe } = u;
+        const actCount = this.auditLogs.filter(
+          (l) => l.actor_id === u.email || l.actor_id === u.user_id
+        ).length;
+        return {
+          ...safe,
+          activity_count: actCount,
+        };
+      });
+      return { rows, rowCount: rows.length };
+    }
+
+    // ADM3. Admin AI Decisions
+    if (trimmed.includes('FROM ai_decisions')) {
+      if (trimmed.includes('COUNT(*)')) {
+        return { rows: [{ total: this.aiDecisions.length }], rowCount: 1 };
+      }
+      return { rows: [...this.aiDecisions], rowCount: this.aiDecisions.length };
+    }
+
+    // ADM4. Admin Policy Rules
+    if (trimmed.includes('FROM policy_rules')) {
+      return { rows: [...this.policyRules], rowCount: this.policyRules.length };
+    }
+
+    // ADM5. Admin Category Breakdown
+    if (trimmed.includes('FROM revenue_risk_cases') && trimmed.includes('GROUP BY failure_category')) {
+      const counts: Record<string, number> = {};
+      for (const c of this.cases) {
+        counts[c.failure_category] = (counts[c.failure_category] || 0) + 1;
+      }
+      const rows = Object.entries(counts).map(([failure_category, count]) => ({ failure_category, count }));
+      return { rows, rowCount: rows.length };
     }
 
     // Fallback: return empty rows

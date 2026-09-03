@@ -2,7 +2,6 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PolicyEngine,
-  PolicyRules,
   PolicyValidator,
   PolicyEvaluationContext,
 } from '../policies';

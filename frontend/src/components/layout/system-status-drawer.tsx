@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { SystemHealthTelemetry } from '@/types/api';
 import { CheckCircle2, Database, Shield, Zap, RefreshCw } from 'lucide-react';

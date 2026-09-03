@@ -8,8 +8,7 @@
  * Does not handle routing — the parent page does.
  */
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 
@@ -20,7 +19,6 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const { login, user } = useAuth();
-  const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

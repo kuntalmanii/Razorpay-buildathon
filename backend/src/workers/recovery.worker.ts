@@ -11,8 +11,6 @@ import { ActionType, ProposedByType } from '../types/domain';
 import { logger } from '../utils/logger';
 
 export class RecoveryWorker {
-  private isRunning = false;
-
   /**
    * Process a single batch of scheduled recovery actions.
    */

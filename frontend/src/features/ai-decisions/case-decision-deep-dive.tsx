@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import { RecoveryCase, RecoveryAction, AuditLog } from '@/types/api';
-import { formatINR, formatDate } from '@/lib/utils';
+import { formatINR } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ui/error-state';

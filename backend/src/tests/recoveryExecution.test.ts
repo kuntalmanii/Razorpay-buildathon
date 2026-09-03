@@ -2,7 +2,6 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   RecoveryExecutor,
-  RecoveryOrchestrator,
   PaymentLinkRecovery,
   RetryRecovery,
   withTransientRetry,
@@ -10,7 +9,6 @@ import {
 import { RecoveryWorker, RetryWorker, VerificationWorker } from '../workers';
 import { setPool } from '../database/connection';
 import { paymentLinkService } from '../services/razorpay/payment-link.service';
-import { paymentService } from '../services/razorpay/payment.service';
 import { RazorpayTimeoutError, RazorpayValidationError } from '../services/razorpay/razorpay.types';
 import { Pool } from 'pg';
 

@@ -36,7 +36,7 @@ export class SimulationController {
   /**
    * GET /api/simulation/status
    */
-  public static async getStatus(req: Request, res: Response): Promise<void> {
+  public static async getStatus(_req: Request, res: Response): Promise<void> {
     if (!SimulationController.checkDevOnly(res)) return;
     const faults = SimulationManager.getActiveFaults();
     sendSuccess(res, { activeFaults: faults, devMode: true });
@@ -66,7 +66,7 @@ export class SimulationController {
   /**
    * POST /api/simulation/reset
    */
-  public static async resetFaults(req: Request, res: Response): Promise<void> {
+  public static async resetFaults(_req: Request, res: Response): Promise<void> {
     if (!SimulationController.checkDevOnly(res)) return;
     SimulationManager.resetAll();
     sendSuccess(res, { message: 'All simulated faults reset' });
