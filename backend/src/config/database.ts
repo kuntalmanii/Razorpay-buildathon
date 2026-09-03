@@ -16,8 +16,7 @@ export function buildPoolConfig(): PoolConfig {
     max: config.database.poolMax,
     connectionTimeoutMillis: config.database.connectionTimeoutMs,
     idleTimeoutMillis: config.database.idleTimeoutMs,
-    // Always return timestamps as JavaScript Date objects
-    // (not strings) regardless of pg.types settings elsewhere
-    allowExitOnIdle: false,
+    // Allow Node event loop to exit when all clients in pool are idle
+    allowExitOnIdle: true,
   };
 }

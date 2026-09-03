@@ -1,5 +1,6 @@
 import express, { Application, Request } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 
 // Load environment variables before importing anything that reads process.env
@@ -15,6 +16,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { generalApiLimiter } from './middleware/rateLimiter';
 import { healthRouter } from './routes/health';
 import { apiRouter } from './routes/api';
+
 
 const app: Application = express();
 
@@ -38,6 +40,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
 app.use(requestLogger);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────

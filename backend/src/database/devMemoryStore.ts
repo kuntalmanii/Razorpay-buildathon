@@ -70,6 +70,18 @@ export interface DevWebhookEvent {
   processed_at: string | null;
 }
 
+export interface DevUser {
+  user_id: string;
+  name: string;
+  email: string;
+  /** bcrypt hash — only returned by the WITH hash variant of the query */
+  password_hash: string;
+  role: 'user' | 'admin';
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 class DevMemoryStore {
   public cases: DevCase[] = [
     {
@@ -423,6 +435,35 @@ class DevMemoryStore {
     },
   ];
 
+  // Pre-seeded dev users:
+  //   admin@recoveriq.dev / Admin@123
+  //   user@recoveriq.dev  / User@123
+  // Hashes generated offline with bcrypt cost 12.
+  public users: DevUser[] = [
+    {
+      user_id: 'usr_dev_admin_001',
+      name: 'Admin User',
+      email: 'admin@recoveriq.dev',
+      // bcrypt hash of 'Admin@123' (cost 12)
+      password_hash: '$2b$12$uFMcdRINcVi1Gu2jVNDsLu/PTfQrr8jB99E5U62blC/SvDhPRgZYW',
+      role: 'admin',
+      is_active: true,
+      created_at: new Date('2026-01-01').toISOString(),
+      updated_at: new Date('2026-01-01').toISOString(),
+    },
+    {
+      user_id: 'usr_dev_user_001',
+      name: 'Demo User',
+      email: 'user@recoveriq.dev',
+      // bcrypt hash of 'User@123' (cost 12)
+      password_hash: '$2b$12$fFcb0rcJEvxFGGV4xk6cA.0yVEGT.DfliYAYFZmIzfRbipzX1KNPe',
+      role: 'user',
+      is_active: true,
+      created_at: new Date('2026-01-01').toISOString(),
+      updated_at: new Date('2026-01-01').toISOString(),
+    },
+  ];
+
   public query(sql: string, params: unknown[] = []): { rows: unknown[]; rowCount: number } {
     const trimmed = sql.trim();
 
@@ -773,8 +814,62 @@ class DevMemoryStore {
       return { rows: [newLog], rowCount: 1 };
     }
 
+    // ─── USERS TABLE ───────────────────────────────────────────────────────────
+
+    // U1. SELECT user by email (includes password_hash — used by login)
+    if (trimmed.startsWith('SELECT user_id, name, email, password_hash') && trimmed.includes('FROM users') && trimmed.includes('WHERE email =')) {
+      const email = (params[0] as string)?.toLowerCase().trim();
+      const found = this.users.find((u) => u.email === email);
+      return { rows: found ? [{ ...found }] : [], rowCount: found ? 1 : 0 };
+    }
+
+    // U2. SELECT user by ID (safe — no password_hash)
+    if (trimmed.startsWith('SELECT user_id, name, email, role') && trimmed.includes('FROM users') && trimmed.includes('WHERE user_id =')) {
+      const id = params[0] as string;
+      const found = this.users.find((u) => u.user_id === id);
+      if (!found) return { rows: [], rowCount: 0 };
+      const { password_hash: _ph, ...safe } = found;
+      return { rows: [safe], rowCount: 1 };
+    }
+
+    // U3. SELECT user by email for uniqueness check (also safe)
+    if (trimmed.startsWith('SELECT user_id') && trimmed.includes('FROM users') && trimmed.includes('WHERE email =')) {
+      const email = (params[0] as string)?.toLowerCase().trim();
+      const found = this.users.find((u) => u.email === email);
+      if (!found) return { rows: [], rowCount: 0 };
+      const { password_hash: _ph, ...safe } = found;
+      return { rows: [safe], rowCount: 1 };
+    }
+
+    // U4. INSERT INTO users
+    if (trimmed.startsWith('INSERT INTO users')) {
+      const newUser: DevUser = {
+        user_id: `usr_${Date.now()}`,
+        name: (params[0] as string) || 'New User',
+        email: ((params[1] as string) || '').toLowerCase().trim(),
+        password_hash: (params[2] as string) || '',
+        role: ((params[3] as string) || 'user') as 'user' | 'admin',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      this.users.push(newUser);
+      const { password_hash: _ph, ...safe } = newUser;
+      return { rows: [safe], rowCount: 1 };
+    }
+
+    // U5. SELECT all users (for admin list)
+    if (trimmed.includes('FROM users') && (trimmed.includes('ORDER BY created_at') || trimmed.startsWith('SELECT user_id, name, email, role'))) {
+      const safeUsers = this.users.map((u) => {
+        const { password_hash: _ph, ...safe } = u;
+        return safe;
+      });
+      return { rows: safeUsers, rowCount: safeUsers.length };
+    }
+
     // Fallback: return empty rows
     return { rows: [], rowCount: 0 };
+
   }
 }
 

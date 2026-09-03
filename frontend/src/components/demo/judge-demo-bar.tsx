@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { ScenarioRunResult } from '@/types/api';
 import { Play, ShieldAlert, Zap, Layers, CheckCircle2, AlertTriangle, X, Bot, ShieldCheck } from 'lucide-react';
@@ -52,10 +53,20 @@ const DEMO_SCENARIOS: DemoScenario[] = [
 ];
 
 export function JudgeDemoBar() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [runningScenario, setRunningScenario] = useState<string | null>(null);
   const [scenarioResult, setScenarioResult] = useState<ScenarioRunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  if (
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname === '/forgot-password' ||
+    pathname === '/unauthorized'
+  ) {
+    return null;
+  }
 
   const handleRunScenario = async (scen: DemoScenario) => {
     setRunningScenario(scen.id);

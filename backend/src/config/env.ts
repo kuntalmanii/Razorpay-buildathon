@@ -59,6 +59,10 @@ export interface AppConfig {
     readonly requestTimeoutMs: number;
     readonly baseUrl: string;
   };
+  readonly auth: {
+    readonly jwtSecret: string;
+    readonly jwtExpiresIn: string;
+  };
   readonly log: {
     readonly level: string;
   };
@@ -81,6 +85,21 @@ function buildConfig(): AppConfig {
 
   const isRazorpayConfigured = Boolean(razorpayKeyId && razorpayKeySecret);
   const isRazorpayTestMode = razorpayKeyId.startsWith('rzp_test_');
+
+  // JWT secret: required in production, falls back to a dev-only placeholder
+  const jwtSecretRaw = optionalEnv('JWT_SECRET', '');
+  let jwtSecret: string;
+  if (!jwtSecretRaw && nodeEnv === 'production') {
+    throw new Error('[Config] JWT_SECRET is required in production');
+  } else if (!jwtSecretRaw) {
+    jwtSecret = 'DEV_ONLY_JWT_SECRET_CHANGE_IN_PRODUCTION_32chars';
+    if (!isTest) {
+      // eslint-disable-next-line no-console
+      console.warn('[RecoverIQ] WARNING: JWT_SECRET not set — using insecure dev default. Set JWT_SECRET in .env');
+    }
+  } else {
+    jwtSecret = jwtSecretRaw;
+  }
 
   return Object.freeze({
     server: {
@@ -109,6 +128,10 @@ function buildConfig(): AppConfig {
       isTestMode: isRazorpayTestMode,
       requestTimeoutMs: optionalInt('RAZORPAY_TIMEOUT_MS', 10000),
       baseUrl: optionalEnv('RAZORPAY_BASE_URL', 'https://api.razorpay.com/v1'),
+    },
+    auth: {
+      jwtSecret,
+      jwtExpiresIn: optionalEnv('JWT_EXPIRES_IN', '30d'),
     },
     log: {
       level: optionalEnv('LOG_LEVEL', isTest ? 'error' : (nodeEnv === 'production' ? 'info' : 'debug')),

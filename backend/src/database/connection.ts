@@ -13,7 +13,7 @@ import { devMemoryStore } from './devMemoryStore';
 
 // ─── Singleton Pool ───────────────────────────────────────────────────────────
 let pool: Pool | null = null;
-let useDevFallback = false;
+let useDevFallback = process.env.USE_DEV_STORE === 'true';
 
 function createDevFallbackPool(): Pool {
   const fallback = {

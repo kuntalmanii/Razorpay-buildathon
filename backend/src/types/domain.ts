@@ -7,6 +7,8 @@
 
 // ─── Enums (matching DB enum values) ─────────────────────────────────────────
 
+export type UserRole = 'user' | 'admin';
+
 export type MerchantStatus = 'active' | 'suspended' | 'inactive';
 
 export type PaymentStatus =
@@ -162,4 +164,16 @@ export interface MetricsSummary {
   actions_by_execution_status: Partial<Record<ExecutionStatus, number>>;
   webhooks_by_status: Partial<Record<WebhookProcessingStatus, number>>;
   period_days: number;
+}
+
+// ─── Auth / Users ─────────────────────────────────────────────────────────────
+
+export interface User {
+  user_id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
 }
