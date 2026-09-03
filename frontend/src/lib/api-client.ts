@@ -71,6 +71,7 @@ async function fetchPaginated<T>(
 ): Promise<{ items: T[]; meta: PaginationMeta }> {
   const url = `${API_BASE}${path}`;
   const res = await fetch(url, {
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
   });
 

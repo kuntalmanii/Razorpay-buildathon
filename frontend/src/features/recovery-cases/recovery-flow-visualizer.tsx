@@ -13,12 +13,11 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  RefreshCw,
   Award,
-  ArrowRight,
   Lock,
+  Stethoscope,
+  Send,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export interface RecoveryFlowVisualizerProps {
@@ -47,35 +46,44 @@ export function RecoveryFlowVisualizer({
   className,
 }: RecoveryFlowVisualizerProps) {
   const latestAction = actions[0];
-  const payload = latestAction?.payload as Record<string, unknown> | undefined;
+  const payload = (latestAction?.payload || {}) as Record<string, unknown>;
 
   const isRecovered = caseData.status === 'recovered';
-  const isBlocked = latestAction?.policy_status === 'rejected';
-  const isFailedAction = latestAction?.execution_status === 'failed';
+  const isBlocked = latestAction?.policy_status === 'rejected' || caseData.status === 'escalated';
+  const isFailedAction = latestAction?.execution_status === 'failed' || caseData.status === 'unrecoverable';
   const hasAiDecision = Boolean(latestAction || auditLogs.some((l) => l.actor_type === 'ai'));
   const hasPolicyDecision = Boolean(latestAction?.policy_status || isRecovered);
-  const hasActionExecuted = Boolean(latestAction?.execution_status === 'completed' || isRecovered);
+  const hasActionExecuted = Boolean(
+    latestAction?.execution_status === 'completed' || isRecovered
+  );
 
   const aiDecisionName =
-    (payload?.decision as string) ||
+    (payload.decision as string) ||
     latestAction?.action_type.replace(/_/g, ' ').toUpperCase() ||
     (caseData.failure_category.includes('insufficient') ? 'PAYMENT LINK' : 'SCHEDULE RETRY');
 
   const confidence =
-    typeof payload?.confidence === 'number'
+    typeof payload.confidence === 'number'
       ? payload.confidence
-      : Number(caseData.recovery_probability);
+      : Number(caseData.recovery_probability || 0.75);
 
-  // Build the 7 Steps
+  const failureReason =
+    latestAction?.failure_reason ||
+    (payload.failure_reason as string) ||
+    (payload.error as string);
+
+  // Exact 8-Stage Lifecycle:
+  // 1. DETECTED → 2. DIAGNOSED → 3. RISK CHECKED → 4. AI RECOMMENDED →
+  // 5. POLICY CHECK → 6. ACTION → 7. VERIFICATION → 8. RECOVERED / FAILED / BLOCKED
   const steps: FlowStep[] = [
     // 1. DETECTED
     {
       id: 'detected',
       name: 'DETECTED',
-      sublabel: 'Payment Ingress',
+      sublabel: 'Ingress Telemetry',
       status: 'completed',
       timestamp: caseData.detected_at,
-      description: `Razorpay payment failure (${caseData.failure_category})`,
+      description: `Razorpay webhook received (${caseData.failure_category.replace(/_/g, ' ')})`,
       icon: AlertTriangle,
     },
 
@@ -83,28 +91,39 @@ export function RecoveryFlowVisualizer({
     {
       id: 'diagnosed',
       name: 'DIAGNOSED',
-      sublabel: 'Risk Calculation',
+      sublabel: 'Error Classification',
+      status: 'completed',
+      timestamp: caseData.detected_at,
+      description: `Deterministic category: ${caseData.failure_category.replace(/_/g, ' ').toUpperCase()}`,
+      icon: Stethoscope,
+    },
+
+    // 3. RISK CHECKED
+    {
+      id: 'risk_checked',
+      name: 'RISK CHECKED',
+      sublabel: 'Customer Scoring',
       status: 'completed',
       timestamp: caseData.detected_at,
       description: `Risk: ${caseData.risk_score}/100 • Recovery Prob: ${(Number(caseData.recovery_probability) * 100).toFixed(0)}%`,
       icon: Activity,
     },
 
-    // 3. AI RECOMMENDATION
+    // 4. AI RECOMMENDED
     {
-      id: 'ai_recommendation',
-      name: 'AI PROPOSAL',
-      sublabel: 'Advisory Reasoning',
+      id: 'ai_recommended',
+      name: 'AI RECOMMENDED',
+      sublabel: 'Advisory Proposal',
       status: hasAiDecision || hasPolicyDecision || isRecovered ? 'completed' : 'current',
       timestamp: latestAction?.created_at || caseData.detected_at,
       description: `Recommended ${aiDecisionName} (Confidence ${(confidence * 100).toFixed(0)}%)`,
       icon: Bot,
     },
 
-    // 4. POLICY CHECK
+    // 5. POLICY CHECK
     {
       id: 'policy_check',
-      name: 'POLICY GATE',
+      name: 'POLICY CHECK',
       sublabel: 'Deterministic Gate',
       status: isBlocked
         ? 'blocked'
@@ -115,12 +134,12 @@ export function RecoveryFlowVisualizer({
         : 'pending',
       timestamp: latestAction?.created_at,
       description: isBlocked
-        ? 'Unsafe recommendation blocked by deterministic policy gate'
-        : 'Rule validation passed (Max 2 retries, 24h cooldown enforced)',
+        ? 'Action halted by deterministic policy safety gate'
+        : 'Policy check passed (24h cooldown, max 2 retries, idempotency enforced)',
       icon: isBlocked ? ShieldAlert : ShieldCheck,
     },
 
-    // 5. ACTION
+    // 6. ACTION
     {
       id: 'action',
       name: 'ACTION',
@@ -136,21 +155,21 @@ export function RecoveryFlowVisualizer({
         : 'pending',
       timestamp: latestAction?.executed_at || latestAction?.created_at,
       description: isBlocked
-        ? 'Execution halted by policy engine'
+        ? 'Dispatch cancelled by policy safety gate'
         : isFailedAction
-        ? 'Gateway timeout detected • Safe retry triggered'
+        ? `Attempt failed: ${failureReason || 'Gateway failure during execution'}`
         : latestAction
-        ? `Dispatched ${latestAction.action_type.replace(/_/g, ' ')}`
+        ? `Dispatched ${latestAction.action_type.replace(/_/g, ' ').toUpperCase()}`
         : 'Awaiting policy clearance',
-      icon: Zap,
+      icon: isFailedAction ? XCircle : Zap,
     },
 
-    // 6. VERIFICATION
+    // 7. VERIFICATION
     {
       id: 'verification',
-      name: 'VERIFY STATE',
-      sublabel: 'Gateway Query',
-      status: isBlocked
+      name: 'VERIFICATION',
+      sublabel: 'Gateway Settlement',
+      status: isBlocked || isFailedAction
         ? 'skipped'
         : isRecovered
         ? 'completed'
@@ -159,244 +178,183 @@ export function RecoveryFlowVisualizer({
         : 'pending',
       timestamp: caseData.resolved_at || undefined,
       description: isRecovered
-        ? 'Razorpay payment capture verified via webhook HMAC'
-        : isBlocked
-        ? 'Verification skipped'
-        : 'Continuous payment polling & webhook listener active',
+        ? 'Payment capture verified via Razorpay webhook HMAC signature'
+        : isBlocked || isFailedAction
+        ? 'Verification skipped due to previous stage outcome'
+        : 'Awaiting webhook capture verification from gateway',
       icon: CheckCircle2,
     },
 
-    // 7. RECOVERED / OUTCOME
+    // 8. RECOVERED / FAILED / BLOCKED / IN PROGRESS
+    // NEVER show "Recovered" until recovery is actually verified (caseData.status === 'recovered')
     {
       id: 'outcome',
-      name: isRecovered ? 'RECOVERED' : isBlocked ? 'BLOCKED' : 'RESOLUTION',
-      sublabel: isRecovered ? 'Verified Settlement' : 'Final State',
+      name: isRecovered
+        ? 'RECOVERED'
+        : isBlocked
+        ? 'BLOCKED'
+        : isFailedAction
+        ? 'FAILED'
+        : 'IN PROGRESS',
+      sublabel: isRecovered
+        ? 'Verified Settlement'
+        : isBlocked
+        ? 'Policy Halted'
+        : isFailedAction
+        ? 'Recovery Failed'
+        : 'Resolution In Flight',
       status: isRecovered
         ? 'completed'
         : isBlocked
         ? 'blocked'
-        : caseData.status === 'in_progress'
-        ? 'current'
-        : 'pending',
+        : isFailedAction
+        ? 'failed'
+        : 'current',
       timestamp: caseData.resolved_at || undefined,
       description: isRecovered
-        ? `${formatINR(Number(caseData.recovered_amount || caseData.amount_at_risk))} successfully retained`
+        ? `${formatINR(Number(caseData.recovered_amount || caseData.amount_at_risk))} successfully settled`
         : isBlocked
-        ? 'Zero money lost to unapproved actions'
-        : 'Recovery cycle in progress',
-      icon: isRecovered ? Award : isBlocked ? XCircle : Clock,
+        ? 'Zero funds lost to unauthorized or unsafe retries'
+        : isFailedAction
+        ? 'Recovery attempts exhausted without payment capture'
+        : 'Autonomous recovery active; awaiting settlement',
+      icon: isRecovered ? Award : isBlocked ? XCircle : isFailedAction ? AlertTriangle : Clock,
     },
   ];
 
   return (
-    <div className={cn('rounded-lg bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] p-5 space-y-5', className)}>
+    <div className={cn('rounded-xl bg-[#1C1B18] border border-[rgba(242,237,227,0.10)] p-5 space-y-5', className)}>
       {/* Visualizer Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[rgba(242,237,227,0.08)]">
         <div>
           <h3 className="text-xs font-mono font-medium text-[#817A70] uppercase tracking-wider flex items-center gap-2">
             <Activity className="w-3.5 h-3.5 text-[#B89A62]" />
-            Signature Recovery Lifecycle Protocol
+            8-Stage Recovery Lifecycle Protocol
           </h3>
           <p className="text-xs text-[#B7B0A3] mt-0.5">
-            Deterministic 7-stage state machine from failure detection to verified settlement
+            Full audit trail of state transitions from webhook ingress to final verified settlement
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <span className="text-[#817A70]">Terminal State:</span>
           {isRecovered ? (
-            <Badge variant="emerald" className="py-1 px-2.5 text-xs">
-              <CheckCircle2 className="w-3.5 h-3.5" /> RECOVERY VERIFIED
-            </Badge>
+            <span className="font-bold text-[#6F9B7A] bg-[#6F9B7A]/15 border border-[#6F9B7A]/30 px-2.5 py-0.5 rounded text-[11px]">
+              VERIFIED RECOVERED
+            </span>
           ) : isBlocked ? (
-            <Badge variant="rose" className="py-1 px-2.5 text-xs">
-              <ShieldAlert className="w-3.5 h-3.5" /> POLICY BLOCKED
-            </Badge>
+            <span className="font-bold text-[#D1B982] bg-[#B68B4F]/15 border border-[#B89A62]/30 px-2.5 py-0.5 rounded text-[11px]">
+              POLICY BLOCKED
+            </span>
+          ) : isFailedAction ? (
+            <span className="font-bold text-[#B56F68] bg-[#B56F68]/15 border border-[#B56F68]/30 px-2.5 py-0.5 rounded text-[11px]">
+              RECOVERY FAILED
+            </span>
           ) : (
-            <Badge variant="gold" className="py-1 px-2.5 text-xs">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" /> IN PROGRESS
-            </Badge>
+            <span className="font-bold text-[#D1B982] bg-[#B89A62]/10 border border-[#B89A62]/25 px-2.5 py-0.5 rounded text-[11px]">
+              IN PROGRESS
+            </span>
           )}
         </div>
       </div>
 
-      {/* Horizontal Lifecycle Visualization (Desktop & Tablet) */}
-      <div className="hidden lg:grid grid-cols-7 gap-2 relative">
-        {steps.map((step, idx) => {
-          const Icon = step.icon;
-          const isLast = idx === steps.length - 1;
+      {/* Horizontal Lifecycle Pipeline */}
+      <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
+        <div className="flex items-start min-w-[820px] justify-between gap-1 relative">
+          {steps.map((step, idx) => {
+            const Icon = step.icon;
+            const isCompleted = step.status === 'completed';
+            const isCurrent = step.status === 'current';
+            const isBlockedStep = step.status === 'blocked';
+            const isFailedStep = step.status === 'failed';
+            const isSkipped = step.status === 'skipped';
+            const isLast = idx === steps.length - 1;
 
-          const isDone = step.status === 'completed';
-          const isCurr = step.status === 'current';
-          const isBlock = step.status === 'blocked';
-          const isFail = step.status === 'failed';
-
-          return (
-            <div key={step.id} className="relative flex flex-col items-start space-y-2 group">
-              {/* Top Connector Line */}
-              {!isLast && (
-                <div className="absolute left-[20px] top-[14px] right-[-14px] h-[2px] z-0 pointer-events-none">
-                  <div
-                    className={cn(
-                      'h-full transition-all duration-300',
-                      isDone
-                        ? 'bg-[#6F9B7A]'
-                        : isBlock
-                        ? 'bg-[#B56F68]'
-                        : isCurr
-                        ? 'bg-[#B89A62]/40'
-                        : 'bg-[rgba(242,237,227,0.08)]'
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* Step Node Indicator */}
-              <div
-                className={cn(
-                  'w-7 h-7 rounded-md flex items-center justify-center text-xs font-mono font-medium z-10 transition-all duration-200',
-                  isDone && 'bg-[#6F9B7A] text-[#151513]',
-                  isCurr && 'bg-[#1C1B18] border-2 border-[#B89A62] text-[#D1B982]',
-                  isBlock && 'bg-[#B56F68] text-[#151513]',
-                  isFail && 'bg-[#B68B4F] text-[#151513]',
-                  step.status === 'pending' && 'bg-[#24221E] border border-[rgba(242,237,227,0.08)] text-[#817A70]',
-                  step.status === 'skipped' && 'bg-[#181714] border border-[rgba(242,237,227,0.06)] text-[#817A70]'
-                )}
-              >
-                <Icon className="w-3.5 h-3.5" />
-              </div>
-
-              {/* Step Meta Info */}
-              <div className="space-y-0.5 pr-2">
-                <div className="flex items-center gap-1">
-                  <span
-                    className={cn(
-                      'font-mono text-[11px] font-semibold tracking-tight',
-                      isDone && 'text-[#F2EDE3]',
-                      isCurr && 'text-[#D1B982]',
-                      isBlock && 'text-[#B56F68]',
-                      isFail && 'text-[#B68B4F]',
-                      (step.status === 'pending' || step.status === 'skipped') && 'text-[#817A70]'
-                    )}
-                  >
-                    {step.name}
-                  </span>
-                </div>
-
-                <p className="text-[10px] font-mono text-[#817A70]">{step.sublabel}</p>
-
-                <p
-                  className={cn(
-                    'text-[10px] leading-tight pt-1',
-                    isDone || isCurr ? 'text-[#B7B0A3]' : 'text-[#817A70]'
-                  )}
+            return (
+              <React.Fragment key={step.id}>
+                <div
+                  className={`flex-1 min-w-[92px] p-2.5 rounded-lg border flex flex-col justify-between transition-all ${
+                    isCompleted
+                      ? 'bg-[#151513] border-[#6F9B7A]/30 text-[#F2EDE3]'
+                      : isBlockedStep
+                      ? 'bg-[#151513] border-[#B68B4F]/40 text-[#D1B982]'
+                      : isFailedStep
+                      ? 'bg-[#151513] border-[#B56F68]/40 text-[#B56F68]'
+                      : isCurrent
+                      ? 'bg-[#24221E] border-[#B89A62] text-[#F2EDE3] shadow-sm'
+                      : isSkipped
+                      ? 'bg-[#151513]/30 border-[rgba(242,237,227,0.04)] opacity-40'
+                      : 'bg-[#151513]/40 border-[rgba(242,237,227,0.06)] opacity-60'
+                  }`}
                 >
-                  {step.description}
-                </p>
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-mono text-[9px] text-[#817A70]">
+                        0{idx + 1}
+                      </span>
+                      <div
+                        className={`w-5 h-5 rounded flex items-center justify-center ${
+                          isCompleted
+                            ? 'bg-[#6F9B7A]/15 text-[#6F9B7A]'
+                            : isBlockedStep
+                            ? 'bg-[#B68B4F]/15 text-[#D1B982]'
+                            : isFailedStep
+                            ? 'bg-[#B56F68]/15 text-[#B56F68]'
+                            : isCurrent
+                            ? 'bg-[#B89A62]/20 text-[#D1B982]'
+                            : 'bg-[#24221E] text-[#817A70]'
+                        }`}
+                      >
+                        <Icon className="w-3 h-3" />
+                      </div>
+                    </div>
 
-                {step.timestamp && (
-                  <p className="text-[9px] font-mono text-[#817A70] pt-0.5">
-                    {formatDate(step.timestamp)}
-                  </p>
+                    <div className="font-mono text-[11px] font-bold tracking-tight truncate">
+                      {step.name}
+                    </div>
+
+                    <div className="text-[9px] text-[#817A70] font-mono truncate">
+                      {step.sublabel}
+                    </div>
+                  </div>
+
+                  <div className="mt-2 pt-1.5 border-t border-[rgba(242,237,227,0.06)]">
+                    <span
+                      className={`inline-block px-1.5 py-0.2 rounded text-[8px] font-mono uppercase font-semibold ${
+                        isCompleted
+                          ? 'bg-[#6F9B7A]/10 text-[#6F9B7A]'
+                          : isBlockedStep
+                          ? 'bg-[#B68B4F]/10 text-[#D1B982]'
+                          : isFailedStep
+                          ? 'bg-[#B56F68]/10 text-[#B56F68]'
+                          : isCurrent
+                          ? 'bg-[#B89A62]/15 text-[#D1B982]'
+                          : 'text-[#817A70]'
+                      }`}
+                    >
+                      {step.status}
+                    </span>
+                  </div>
+                </div>
+
+                {!isLast && (
+                  <div className="shrink-0 text-[#817A70]/40 pt-4 px-0.5 text-xs font-mono select-none">
+                    &rarr;
+                  </div>
                 )}
-              </div>
-            </div>
-          );
-        })}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Vertical Lifecycle Visualization (Mobile & Small screens) */}
-      <div className="lg:hidden relative pl-6 border-l border-[rgba(242,237,227,0.10)] space-y-4">
-        {steps.map((step) => {
-          const Icon = step.icon;
-          const isDone = step.status === 'completed';
-          const isCurr = step.status === 'current';
-          const isBlock = step.status === 'blocked';
-          const isFail = step.status === 'failed';
-
-          return (
-            <div key={step.id} className="relative space-y-1">
-              {/* Node Dot */}
-              <div
-                className={cn(
-                  'absolute -left-[31px] top-1 w-5 h-5 rounded-md flex items-center justify-center text-[10px]',
-                  isDone && 'bg-[#6F9B7A] text-[#151513]',
-                  isCurr && 'bg-[#1C1B18] border border-[#B89A62] text-[#D1B982]',
-                  isBlock && 'bg-[#B56F68] text-[#151513]',
-                  isFail && 'bg-[#B68B4F] text-[#151513]',
-                  (step.status === 'pending' || step.status === 'skipped') &&
-                    'bg-[#24221E] border border-[rgba(242,237,227,0.08)] text-[#817A70]'
-                )}
-              >
-                <Icon className="w-3 h-3" />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    'font-mono text-xs font-semibold',
-                    isDone && 'text-[#F2EDE3]',
-                    isCurr && 'text-[#D1B982]',
-                    isBlock && 'text-[#B56F68]',
-                    (step.status === 'pending' || step.status === 'skipped') && 'text-[#817A70]'
-                  )}
-                >
-                  {step.name}
-                </span>
-                {step.timestamp && (
-                  <span className="text-[10px] font-mono text-[#817A70]">
-                    {formatDate(step.timestamp)}
-                  </span>
-                )}
-              </div>
-
-              <p className="text-xs text-[#B7B0A3]">{step.description}</p>
-            </div>
-          );
-        })}
+      {/* Safety Policy Guarantee Notice */}
+      <div className="p-3 rounded-lg bg-[#151513] border border-[rgba(242,237,227,0.06)] flex items-start gap-2.5 text-xs text-[#817A70] font-mono">
+        <Lock className="w-3.5 h-3.5 text-[#B89A62] shrink-0 mt-0.5" />
+        <span>
+          <strong>Zero Double-Billing Rule:</strong> RecoverIQ enforces strict pre-dispatch payment status validation. If a payment is captured via standard retry, any open payment links are instantly revoked.
+        </span>
       </div>
-
-      {/* Narrative Callout Banners for Signature States */}
-      {isRecovered && (
-        <div className="p-3.5 rounded-lg bg-[#6F9B7A]/10 border border-[#6F9B7A]/30 flex items-start gap-3 text-xs motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#6F9B7A] flex-shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <div className="font-semibold text-[#F2EDE3]">
-              Confirmed Settlement: {formatINR(Number(caseData.recovered_amount || caseData.amount_at_risk))} Retained
-            </div>
-            <p className="text-[11px] text-[#B7B0A3] font-mono">
-              Razorpay webhook received with cryptographic HMAC-SHA256 signature verification. State transition to RECOVERED is immutable.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {isBlocked && (
-        <div className="p-3.5 rounded-lg bg-[#B56F68]/10 border border-[#B56F68]/30 flex items-start gap-3 text-xs motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200">
-          <ShieldAlert className="w-4 h-4 text-[#B56F68] flex-shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <div className="font-semibold text-[#F2EDE3]">
-              Safety Policy Intervention: Unsafe Action Refused
-            </div>
-            <p className="text-[11px] text-[#B7B0A3]">
-              The AI recommended an action that violated deterministic safety boundaries (e.g. exceeded retry limits or broken cooldown). The Policy Engine intercepted and blocked execution.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {isFailedAction && (
-        <div className="p-3.5 rounded-lg bg-[#B68B4F]/10 border border-[#B68B4F]/30 flex items-start gap-3 text-xs motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200">
-          <RefreshCw className="w-4 h-4 text-[#B68B4F] flex-shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <div className="font-semibold text-[#F2EDE3]">
-              Gateway Uncertainty Detected: Safe Retry Armed
-            </div>
-            <p className="text-[11px] text-[#B7B0A3]">
-              Razorpay API timed out during execution. The system safely queried transaction status before initiating a controlled idempotent retry without double-billing.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
